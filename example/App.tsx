@@ -70,105 +70,6 @@ const App: React.FC = () => {
     },
   ]);
 
-  const [customItems, setCustomItems] = useState<GridItem[]>([
-    {
-      id: 1,
-      header: '🚀 Rocket Widget',
-      content: (
-        <div className="custom-item">
-          <p>Ready for launch!</p>
-        </div>
-      ),
-    },
-    {
-      id: 2,
-      header: '🌟 Star Widget',
-      content: (
-        <div className="custom-item">
-          <p>Shining bright</p>
-        </div>
-      ),
-    },
-    {
-      id: 3,
-      header: '🎨 Art Widget',
-      content: (
-        <div className="custom-item">
-          <p>Creative expression</p>
-        </div>
-      ),
-    },
-    {
-      id: 4,
-      header: '💻 Code Widget',
-      content: (
-        <div className="custom-item">
-          <p>Building the future</p>
-        </div>
-      ),
-    },
-    {
-      id: 5,
-      header: '🎵 Music Widget',
-      content: (
-        <div className="custom-item">
-          <p>Harmony in motion</p>
-        </div>
-      ),
-    },
-    {
-      id: 6,
-      header: '🌍 World Widget',
-      content: (
-        <div className="custom-item">
-          <p>Connected globally</p>
-        </div>
-      ),
-    },
-    {
-      id: 7,
-      header: '⚡ Energy Widget',
-      content: (
-        <div className="custom-item">
-          <p>Powerful and fast</p>
-        </div>
-      ),
-    },
-    {
-      id: 8,
-      header: '🎯 Target Widget',
-      content: (
-        <div className="custom-item">
-          <p>Precision focused</p>
-        </div>
-      ),
-    },
-    {
-      id: 9,
-      header: '🌈 Rainbow Widget',
-      content: (
-        <div className="custom-item">
-          <p>Colorful diversity</p>
-        </div>
-      ),
-    },
-    {
-      id: 10,
-      header: '🔮 Magic Widget',
-      content: (
-        <div className="custom-item">
-          <p>Mysterious wonders</p>
-        </div>
-      ),
-    },
-  ]);
-
-  const handleItemsReorder = (newItems: GridItem[]) => {
-    console.log('Items reordered:', newItems.map(item => item.header));
-    setCustomItems(newItems);
-    setReorderCount(prev => prev + 1);
-  };
-
   // Interactive grid drag handlers (based on working debug test)
   const handleInteractiveDragStart = (e: React.DragEvent, itemId: string | number) => {
     console.log('Interactive drag start for item:', itemId);
@@ -249,8 +150,6 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <DebugInfo dragState={debugDragState} items={customItems} />
-      
       <header className="app-header">
         <h1>WindowGrid Library</h1>
         <p>A flexible grid container component with draggable widgets</p>
@@ -401,24 +300,6 @@ const App: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      <div className="demo-section">
-        <h2>GridContainer Component (For Reference)</h2>
-        <p>This shows the GridContainer component implementation:</p>
-        
-        <div className="grid-demo">
-          <GridContainer
-            width={180}
-            height={120}
-            items={customItems}
-            showGridLines={true}
-            showHeaders={true}
-            draggable={true}
-            onItemsReorder={handleItemsReorder}
-            className="demo-grid"
-          />
         </div>
       </div>
 
