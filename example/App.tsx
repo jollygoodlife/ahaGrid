@@ -19,11 +19,13 @@ interface GridItemType {
 const App: React.FC = () => {
   const [gridWidth, setGridWidth] = useState(200);
   const [gridHeight, setGridHeight] = useState(150);
+  const [gridColumns, setGridColumns] = useState(6);
+  const [gridRows, setGridRows] = useState(10);
   const [showGridLines, setShowGridLines] = useState(true);
   const [showHeaders, setShowHeaders] = useState(true);
   const [draggable, setDraggable] = useState(true);
   const [reorderCount, setReorderCount] = useState(0);
-  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>(null);
+  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>("Error:");
   const [debugDragState, setDebugDragState] = useState({
     isDragging: false,
     draggedItemId: null as string | number | null,
@@ -118,36 +120,36 @@ const App: React.FC = () => {
       content: 'Mysterious wonders',
       colSize: 1,
       rowSize: 1,
-      gridCol: 4,
+      gridCol: 5,
       gridRow: 1
     },
   ]);
 
   // Function to generate placeholder items for empty grid spaces
-  const generatePlaceholders = (items: GridItemType[], maxCols: number = 6): GridItemType[] => {
+  const generatePlaceholders = (items: GridItemType[]): GridItemType[] => {
     const placeholders: GridItemType[] = [];
     let placeholderId = 1000; // Start placeholder IDs at 1000 to avoid conflicts
-    
+
     // Create a grid representation to find empty spaces
-    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
-    
+    const grid = Array(gridColumns).fill(null).map(() => Array(gridRows).fill(null));
+
     // Place existing items in the grid at their actual positions
     items.forEach(item => {
       if (item.gridCol !== undefined && item.gridRow !== undefined) {
         // Place the item at its actual position
         for (let r = item.gridRow; r < item.gridRow + item.rowSize; r++) {
           for (let c = item.gridCol; c < item.gridCol + item.colSize; c++) {
-            if (r < 10 && c < maxCols) {
+            if (r < gridRows && c < gridColumns) {
               grid[c][r] = item.id;
             }
           }
         }
       }
     });
-    
+
     // Add placeholder items for empty spaces
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < maxCols; col++) {
+    for (let row = 0; row < gridRows; row++) {
+      for (let col = 0; col < gridColumns; col++) {
         if (grid[col][row] === null) {
           placeholders.push({
             id: placeholderId++,
@@ -163,16 +165,16 @@ const App: React.FC = () => {
         }
       }
     }
-    
+
     console.log('Generated placeholders:', placeholders.length, 'for empty spaces');
     return placeholders;
   };
 
   // Function to create placeholders for the original position when a widget moves
-  const createPlaceholdersForOriginalPosition = (widget: GridItemType, maxCols: number = 6): GridItemType[] => {
+  const createPlaceholdersForOriginalPosition = (widget: GridItemType): GridItemType[] => {
     const placeholders: GridItemType[] = [];
     let placeholderId = 1000;
-    
+
     if (widget.gridCol !== undefined && widget.gridRow !== undefined) {
       // Create placeholders for each grid cell the widget occupied
       for (let row = widget.gridRow; row < widget.gridRow + widget.rowSize; row++) {
@@ -190,14 +192,14 @@ const App: React.FC = () => {
         }
       }
     }
-    
+
     return placeholders;
   };
 
   // Function to place a widget at a specific grid position
-  const placeWidgetAtPosition = (widget: GridItemType, targetCol: number, targetRow: number, maxCols: number = 6) => {
+  const placeWidgetAtPosition = (widget: GridItemType, targetCol: number, targetRow: number) => {
     const newItems = [...interactiveItems];
-    
+
     // Find the widget and update its position
     const widgetIndex = newItems.findIndex(item => item.id === widget.id);
     if (widgetIndex !== -1) {
@@ -208,15 +210,15 @@ const App: React.FC = () => {
         gridRow: targetRow
       };
     }
-    
+
     return newItems;
   };
 
   // Function to assign default grid positions to widgets
-  const assignDefaultPositions = (items: GridItemType[], maxCols: number = 6): GridItemType[] => {
+  const assignDefaultPositions = (items: GridItemType[]): GridItemType[] => {
     const positionedItems: GridItemType[] = [];
-    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
-    
+    const grid = Array(gridColumns).fill(null).map(() => Array(gridRows).fill(null));
+
     // First, place all items that already have positions
     items.forEach(item => {
       if (item.gridCol !== undefined && item.gridRow !== undefined) {
@@ -224,34 +226,34 @@ const App: React.FC = () => {
         positionedItems.push(item);
         for (let r = item.gridRow; r < item.gridRow + item.rowSize; r++) {
           for (let c = item.gridCol; c < item.gridCol + item.colSize; c++) {
-            if (r < 10 && c < maxCols) {
+            if (r < gridRows && c < gridColumns) {
               grid[c][r] = item.id;
             }
           }
         }
       }
     });
-    
+
     // Then, find positions for items that don't have coordinates yet
     items.forEach(item => {
       if (item.gridCol === undefined || item.gridRow === undefined) {
         // Find next available position for this item
         let placed = false;
-        for (let row = 0; row < 10 && !placed; row++) {
-          for (let col = 0; col < maxCols && !placed; col++) {
+        for (let row = 0; row < gridRows && !placed; row++) {
+          for (let col = 0; col < gridColumns && !placed; col++) {
             let canPlace = true;
-            
+
             // Check if the item can fit at current position
             for (let r = row; r < row + item.rowSize; r++) {
               for (let c = col; c < col + item.colSize; c++) {
-                if (r >= 10 || c >= maxCols || grid[c][r] !== null) {
+                if (r >= gridRows || c >= gridColumns || grid[c][r] !== null) {
                   canPlace = false;
                   break;
                 }
               }
               if (!canPlace) break;
             }
-            
+
             if (canPlace) {
               // Place the item
               const positionedItem = {
@@ -260,7 +262,7 @@ const App: React.FC = () => {
                 gridRow: row
               };
               positionedItems.push(positionedItem);
-              
+
               for (let r = row; r < row + item.rowSize; r++) {
                 for (let c = col; c < col + item.colSize; c++) {
                   grid[c][r] = item.id;
@@ -272,7 +274,7 @@ const App: React.FC = () => {
         }
       }
     });
-    
+
     return positionedItems;
   };
 
@@ -304,13 +306,13 @@ const App: React.FC = () => {
     e.preventDefault();
     const draggedItemId = e.dataTransfer.getData('text/plain');
     console.log('Interactive drop - dragged:', draggedItemId, 'target:', targetItemId);
-    
+
     if (draggedItemId && draggedItemId !== targetItemId.toString()) {
       const draggedItem = positionedItems.find(item => item.id.toString() === draggedItemId);
       const targetItem = allGridItems.find(item => item.id === targetItemId);
-      
+
       console.log('Found dragged item:', draggedItem, 'target item:', targetItem);
-      
+
       if (draggedItem && targetItem) {
         if (targetItem.isPlaceholder && targetItem.gridCol !== undefined && targetItem.gridRow !== undefined) {
           // If dropping on a placeholder, check if the widget can fit there
@@ -318,14 +320,14 @@ const App: React.FC = () => {
             // Store the original position before moving
             const originalCol = draggedItem.gridCol;
             const originalRow = draggedItem.gridRow;
-            
+
             // Move the widget to the new position
             const newItems = placeWidgetAtPosition(draggedItem, targetItem.gridCol, targetItem.gridRow);
             console.log('Moving widget from', originalCol, originalRow, 'to', targetItem.gridCol, targetItem.gridRow, draggedItem.header);
             console.log('Original position will become a placeholder for future moves');
             setInteractiveItems(newItems);
             setReorderCount(prev => prev + 1);
-            
+
             // Validate the new grid state
             setTimeout(() => {
               validateGridState(newItems);
@@ -334,7 +336,7 @@ const App: React.FC = () => {
             console.log('Widget cannot fit at this position:', draggedItem.header);
             // Show feedback that the move is not allowed
             setInvalidDropMessage(`Cannot place ${draggedItem.header} here - not enough space`);
-            setTimeout(() => setInvalidDropMessage(null), 3000);
+            // setTimeout(() => setInvalidDropMessage(null), 3000);
           }
         } else if (!targetItem.isPlaceholder) {
           // If dropping on another widget, check if they can swap positions
@@ -342,7 +344,7 @@ const App: React.FC = () => {
           if (targetRealItem && targetRealItem.gridCol !== undefined && targetRealItem.gridRow !== undefined) {
             const draggedCanFitAtTarget = canWidgetFitAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
             const targetCanFitAtDragged = canWidgetFitAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
-            
+
             if (draggedCanFitAtTarget && targetCanFitAtDragged) {
               // Both widgets can fit in each other's positions, so swap them
               const newItems = placeWidgetAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
@@ -350,7 +352,7 @@ const App: React.FC = () => {
               console.log('Swapping widget positions:', draggedItem.header, 'and', targetRealItem.header);
               setInteractiveItems(updatedItems);
               setReorderCount(prev => prev + 1);
-              
+
               // Validate the new grid state
               setTimeout(() => {
                 validateGridState(updatedItems);
@@ -389,7 +391,7 @@ const App: React.FC = () => {
     e.preventDefault();
     const draggedItemId = e.dataTransfer.getData('text/plain');
     console.log('Custom drop - dragged:', draggedItemId, 'target:', targetItemId);
-    
+
     setDebugDragState({
       isDragging: false,
       draggedItemId: null,
@@ -407,26 +409,26 @@ const App: React.FC = () => {
   };
 
   // Function to check if a widget can fit at a specific grid position
-  const canWidgetFitAtPosition = (widget: GridItemType, targetCol: number, targetRow: number, maxCols: number = 6): boolean => {
+  const canWidgetFitAtPosition = (widget: GridItemType, targetCol: number, targetRow: number): boolean => {
     // Check if the widget would fit within grid bounds
-    if (targetCol + widget.colSize > maxCols || targetRow + widget.rowSize > 10) {
+    if (targetCol + widget.colSize > gridColumns || targetRow + widget.rowSize > gridRows) {
       console.log('Widget would exceed grid bounds:', widget.header, 'at', targetCol, targetRow);
       return false;
     }
-    
+
     // Check if the space is occupied by other widgets
     for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
       for (let col = targetCol; col < targetCol + widget.colSize; col++) {
-        const existingItem = positionedItems.find(item => 
-          item.gridCol !== undefined && 
+        const existingItem = positionedItems.find(item =>
+          item.gridCol !== undefined &&
           item.gridRow !== undefined &&
           item.id !== widget.id && // Don't check against the widget itself
-          col >= item.gridCol && 
+          col >= item.gridCol &&
           col < item.gridCol + item.colSize &&
-          row >= item.gridRow && 
+          row >= item.gridRow &&
           row < item.gridRow + item.rowSize
         );
-        
+
         if (existingItem) {
           console.log('Collision detected:', widget.header, 'would overlap with', existingItem.header, 'at position', col, row);
           console.log('Widget dimensions:', widget.colSize, 'x', widget.rowSize, 'at', targetCol, targetRow);
@@ -435,17 +437,17 @@ const App: React.FC = () => {
         }
       }
     }
-    
+
     console.log('Widget can fit at position:', widget.header, 'at', targetCol, targetRow);
     return true; // Widget can fit here
   };
 
   // Function to find the best available position for a widget
-  const findBestPositionForWidget = (widget: GridItemType, maxCols: number = 6): { col: number, row: number } | null => {
+  const findBestPositionForWidget = (widget: GridItemType): { col: number, row: number } | null => {
     // Try to find the first available position
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < maxCols; col++) {
-        if (canWidgetFitAtPosition(widget, col, row, maxCols)) {
+    for (let row = 0; row < gridRows; row++) {
+      for (let col = 0; col < gridColumns; col++) {
+        if (canWidgetFitAtPosition(widget, col, row)) {
           return { col, row };
         }
       }
@@ -454,16 +456,16 @@ const App: React.FC = () => {
   };
 
   // Function to validate the current grid state and detect overlaps
-  const validateGridState = (items: GridItemType[], maxCols: number = 6): void => {
-    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
-    const overlaps: Array<{widget1: GridItemType, widget2: GridItemType, position: [number, number]}> = [];
-    
+  const validateGridState = (items: GridItemType[]): void => {
+    const grid = Array(gridColumns).fill(null).map(() => Array(gridRows).fill(null));
+    const overlaps: Array<{ widget1: GridItemType, widget2: GridItemType, position: [number, number] }> = [];
+
     // Place all widgets in the grid and detect overlaps
     items.forEach(item => {
       if (item.gridCol !== undefined && item.gridRow !== undefined) {
         for (let row = item.gridRow; row < item.gridRow + item.rowSize; row++) {
           for (let col = item.gridCol; col < item.gridCol + item.colSize; col++) {
-            if (row < 10 && col < maxCols) {
+            if (row < gridRows && col < gridColumns) {
               if (grid[col][row] !== null) {
                 // Found an overlap
                 const existingWidget = items.find(w => w.id === grid[col][row]);
@@ -482,7 +484,7 @@ const App: React.FC = () => {
         }
       }
     });
-    
+
     if (overlaps.length > 0) {
       console.error('Grid validation failed - overlaps detected:', overlaps);
       overlaps.forEach(overlap => {
@@ -499,13 +501,6 @@ const App: React.FC = () => {
         <h1>WindowGrid Library</h1>
         <p>A flexible grid container component with draggable widgets</p>
       </header>
-
-      {/* Debug Test Section */}
-      <div className="demo-section">
-        <h2>🔧 Drag Debug Test</h2>
-        <p>Test basic drag functionality first:</p>
-        <DragDebugTest />
-      </div>
 
       <div className="controls">
         <div className="control-group">
@@ -533,6 +528,34 @@ const App: React.FC = () => {
               onChange={(e) => setGridHeight(Number(e.target.value))}
             />
             <span>{gridHeight}px</span>
+          </label>
+        </div>
+
+        <div className="control-group">
+          <label>
+            Number of Columns:
+            <input
+              type="range"
+              min="3"
+              max="12"
+              value={gridColumns}
+              onChange={(e) => setGridColumns(Number(e.target.value))}
+            />
+            <span>{gridColumns}</span>
+          </label>
+        </div>
+
+        <div className="control-group">
+          <label>
+            Number of Rows:
+            <input
+              type="range"
+              min="5"
+              max="20"
+              value={gridRows}
+              onChange={(e) => setGridRows(Number(e.target.value))}
+            />
+            <span>{gridRows}</span>
           </label>
         </div>
 
@@ -588,6 +611,18 @@ const App: React.FC = () => {
             <p>⚠️ {invalidDropMessage}</p>
           </div>
         )}
+
+        <div className="grid-info" style={{
+          backgroundColor: '#e3f2fd',
+          color: '#1976d2',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          border: '1px solid #bbdefb',
+          marginTop: '8px',
+          fontSize: '0.9em'
+        }}>
+          <p>📐 <strong>Grid Size:</strong> {gridColumns} × {gridRows} = {gridColumns * gridRows} cells | Total Width: {gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px</p>
+        </div>
       </div>
 
       <div className="demo-section">
@@ -602,17 +637,17 @@ const App: React.FC = () => {
         <p style={{ color: '#666', fontSize: '0.9em' }}>
           🚫 <strong>No Displacement:</strong> When a widget moves to an empty space, other widgets stay in their positions. The original position becomes available as a drop target.
         </p>
-        
+
         <div className="grid-demo">
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: `repeat(auto-fill, minmax(${gridWidth}px, 1fr))`,
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${gridColumns}, ${gridWidth}px)`,
             gridAutoRows: `${gridHeight}px`,
             gap: showGridLines ? '1px' : '0px',
             padding: showGridLines ? '1px' : '0px',
             backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
-            width: '100%',
-            maxWidth: '1200px'
+            width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
+            maxWidth: '100%'
           }}>
             {allGridItems.map((item) => (
               <div
@@ -658,18 +693,18 @@ const App: React.FC = () => {
               >
                 {showHeaders && !item.isPlaceholder && (
                   <div style={{
-                    height: '32px',
+                    height: '48px',
                     backgroundColor: '#f8f9fa',
                     borderBottom: '1px solid #e9ecef',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '0 8px',
+                    padding: '8px 8px',
                     cursor: 'default',
                     userSelect: 'none',
                     fontWeight: 'bold'
                   }}>
-                    
+
                     {draggable && (
                       <span
                         draggable={true}
@@ -678,7 +713,7 @@ const App: React.FC = () => {
                           // Set custom drag image to show the entire widget
                           const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
                           if (widgetElement) {
-                                                      e.dataTransfer.setDragImage(widgetElement, 20, 20);
+                            e.dataTransfer.setDragImage(widgetElement, 20, 20);
 
                             // Create a clone of the widget for the drag preview
                             // const clone = widgetElement.cloneNode(true) as HTMLElement;
@@ -690,9 +725,9 @@ const App: React.FC = () => {
                             // clone.style.pointerEvents = 'none';
                             // clone.style.zIndex = '10000';
                             // document.body.appendChild(clone);
-                            
+
                             // e.dataTransfer.setDragImage(clone, 20, 20);
-                            
+
                             // // Remove the clone after a short delay
                             // setTimeout(() => {
                             //   if (document.body.contains(clone)) {
@@ -702,13 +737,19 @@ const App: React.FC = () => {
                           }
                         }}
                         style={{
+                          display: 'flex',
+                          alignItems: 'center',    // vertical center
+                          justifyContent: 'center',// horizontal center
+                          width: '32px',
+                          height: '32px',
+                          padding: '0px',
                           cursor: 'grab',
-                          borderRadius: '2px',
+                          borderRadius: '50%', // More round
                           transition: 'background-color 0.2s ease',
                           userSelect: 'none'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#e9ecef';
+                          e.currentTarget.style.backgroundColor = '#ccccff';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'transparent';
