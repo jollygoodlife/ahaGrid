@@ -592,9 +592,9 @@ const App: React.FC = () => {
 
       <div className="demo-section">
         <h2>Interactive Draggable Grid (Simple Implementation)</h2>
-        <p>Drag the header bars to rearrange the widgets! This uses the same logic as the working debug test.</p>
+        <p>Drag the ⋮⋮ handle in widget headers to rearrange widgets (simple implementation)</p>
         <p style={{ color: '#666', fontSize: '0.9em' }}>
-          💡 <strong>Tip:</strong> Click and drag the gray header bars to move widgets around. You can also drop widgets into the dashed placeholder areas to fill empty grid spaces!
+          💡 <strong>Tip:</strong> Click and drag the ⋮⋮ handle in the header to move widgets around. You can also drop widgets into the dashed placeholder areas to fill empty grid spaces!
         </p>
         <p style={{ color: '#666', fontSize: '0.9em' }}>
           📏 <strong>Size Rules:</strong> Widgets can only move to spaces that can accommodate their size. Large widgets can't fit in small spaces, and widgets can only swap if they have the same dimensions.
@@ -617,8 +617,7 @@ const App: React.FC = () => {
             {allGridItems.map((item) => (
               <div
                 key={item.id}
-                draggable={draggable && !item.isPlaceholder}
-                onDragStart={(e) => !item.isPlaceholder && handleInteractiveDragStart(e, item.id)}
+                data-widget-id={item.id}
                 onDragEnd={handleInteractiveDragEnd}
                 onDragOver={handleInteractiveDragOver}
                 onDrop={(e) => handleInteractiveDrop(e, item.id)}
@@ -644,7 +643,7 @@ const App: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   boxSizing: 'border-box',
-                  cursor: item.isPlaceholder ? 'default' : (draggable ? 'grab' : 'default'),
+                  cursor: item.isPlaceholder ? 'default' : 'default',
                   userSelect: 'none',
                   gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
                   gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
@@ -664,14 +663,67 @@ const App: React.FC = () => {
                     borderBottom: '1px solid #e9ecef',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    gap: '12px',
                     padding: '0 8px',
-                    cursor: draggable ? 'grab' : 'default',
+                    cursor: 'default',
                     userSelect: 'none',
                     fontWeight: 'bold'
                   }}>
+                    
+                    {draggable && (
+                      <span
+                        draggable={true}
+                        onDragStart={(e) => {
+                          handleInteractiveDragStart(e, item.id);
+                          // Set custom drag image to show the entire widget
+                          const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
+                          if (widgetElement) {
+                                                      e.dataTransfer.setDragImage(widgetElement, 20, 20);
+
+                            // Create a clone of the widget for the drag preview
+                            // const clone = widgetElement.cloneNode(true) as HTMLElement;
+                            // clone.style.position = 'absolute';
+                            // clone.style.top = '-1000px';
+                            // clone.style.left = '-1000px';
+                            // clone.style.opacity = '0.8';
+                            // clone.style.transform = 'rotate(5deg)';
+                            // clone.style.pointerEvents = 'none';
+                            // clone.style.zIndex = '10000';
+                            // document.body.appendChild(clone);
+                            
+                            // e.dataTransfer.setDragImage(clone, 20, 20);
+                            
+                            // // Remove the clone after a short delay
+                            // setTimeout(() => {
+                            //   if (document.body.contains(clone)) {
+                            //     document.body.removeChild(clone);
+                            //   }
+                            // }, 100);
+                          }
+                        }}
+                        style={{
+                          cursor: 'grab',
+                          borderRadius: '2px',
+                          transition: 'background-color 0.2s ease',
+                          userSelect: 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#e9ecef';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        onMouseDown={(e) => {
+                          e.currentTarget.style.cursor = 'grabbing';
+                        }}
+                        onMouseUp={(e) => {
+                          e.currentTarget.style.cursor = 'grab';
+                        }}
+                      >
+                        ⋮⋮
+                      </span>
+                    )}
                     <span>{item.header}</span>
-                    {draggable && <span>⋮⋮</span>}
                   </div>
                 )}
                 {!item.isPlaceholder && (
@@ -698,7 +750,7 @@ const App: React.FC = () => {
         <div className="instructions">
           <ul>
             <li><strong>Debug Test:</strong> Try the blue "Drag Me" div first to test basic drag functionality</li>
-            <li><strong>Interactive Grid:</strong> Drag the gray header bars to rearrange widgets (simple implementation)</li>
+            <li><strong>Interactive Grid:</strong> Drag the ⋮⋮ handle in widget headers to rearrange widgets (simple implementation)</li>
             <li><strong>GridContainer:</strong> The component-based implementation for reference</li>
             <li><strong>Visual Feedback:</strong> Widgets show visual feedback during drag operations</li>
             <li><strong>Toggle Features:</strong> Use the controls above to enable/disable headers and dragging</li>
