@@ -698,8 +698,8 @@ const App: React.FC = () => {
                     borderBottom: '1px solid #e9ecef',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
-                    padding: '8px 8px',
+                    gap: '4px',
+                    padding: '0px 8px 0 4px',
                     cursor: 'default',
                     userSelect: 'none',
                     fontWeight: 'bold'
