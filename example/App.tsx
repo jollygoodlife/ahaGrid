@@ -17,113 +17,315 @@ interface GridItemType {
 }
 
 const App: React.FC = () => {
-  const [gridWidth, setGridWidth] = useState(200);
-  const [gridHeight, setGridHeight] = useState(150);
-  const [gridColumns, setGridColumns] = useState(6);
-  const [gridRows, setGridRows] = useState(10);
-  const [showGridLines, setShowGridLines] = useState(true);
-  const [showHeaders, setShowHeaders] = useState(true);
-  const [draggable, setDraggable] = useState(true);
+  // Load initial state from localStorage or use defaults
+  const [gridWidth, setGridWidth] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_gridWidth');
+    return saved ? Number(saved) : 200;
+  });
+  
+  const [gridHeight, setGridHeight] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_gridHeight');
+    return saved ? Number(saved) : 150;
+  });
+  
+  const [gridColumns, setGridColumns] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_gridColumns');
+    return saved ? Number(saved) : 6;
+  });
+  
+  const [gridRows, setGridRows] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_gridRows');
+    return saved ? Number(saved) : 10;
+  });
+  
+  const [showGridLines, setShowGridLines] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_showGridLines');
+    return saved ? JSON.parse(saved) : true;
+  });
+  
+  const [showHeaders, setShowHeaders] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_showHeaders');
+    return saved ? JSON.parse(saved) : true;
+  });
+  
+  const [draggable, setDraggable] = useState(() => {
+    const saved = localStorage.getItem('windowgrid_draggable');
+    return saved ? JSON.parse(saved) : true;
+  });
+  
   const [reorderCount, setReorderCount] = useState(0);
-  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>("Error:");
+  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>(null);
   const [debugDragState, setDebugDragState] = useState({
     isDragging: false,
     draggedItemId: null as string | number | null,
     draggedOverItemId: null as string | number | null,
   });
 
-  const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>([
-    {
-      id: 1,
-      header: '🚀 Rocket Widget',
-      content: 'Ready for launch!',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 0,
-      gridRow: 0
-    },
-    {
-      id: 2,
-      header: '🌟 Star Widget',
-      content: 'Shining bright',
-      colSize: 2,
-      rowSize: 1,
-      gridCol: 1,
-      gridRow: 0
-    },
-    {
-      id: 3,
-      header: '🎨 Art Widget',
-      content: 'Creative expression',
-      colSize: 1,
-      rowSize: 2,
-      gridCol: 3,
-      gridRow: 0
-    },
-    {
-      id: 4,
-      header: '💻 Code Widget',
-      content: 'Building the future',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 0,
-      gridRow: 1
-    },
-    {
-      id: 5,
-      header: '🎵 Music Widget',
-      content: 'Harmony in motion',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 4,
-      gridRow: 0
-    },
-    {
-      id: 6,
-      header: '🌍 World Widget',
-      content: 'Connected globally',
-      colSize: 2,
-      rowSize: 2,
-      gridCol: 0,
-      gridRow: 2
-    },
-    {
-      id: 7,
-      header: '⚡ Energy Widget',
-      content: 'Powerful and fast',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 5,
-      gridRow: 0
-    },
-    {
-      id: 8,
-      header: '🎯 Target Widget',
-      content: 'Precision focused',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 2,
-      gridRow: 1
-    },
-    {
-      id: 9,
-      header: '🌈 Rainbow Widget',
-      content: 'Colorful diversity',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 4,
-      gridRow: 2
-    },
-    {
-      id: 10,
-      header: '🔮 Magic Widget',
-      content: 'Mysterious wonders',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 5,
-      gridRow: 1
-    },
-  ]);
+  // Load widget positions from localStorage or use defaults
+  const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>(() => {
+    const saved = localStorage.getItem('windowgrid_widgets');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (error) {
+        console.error('Failed to parse saved widgets:', error);
+      }
+    }
+    
+    // Default widget positions
+    return [
+      {
+        id: 1,
+        header: '🚀 Rocket Widget',
+        content: 'Ready for launch!',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 0,
+        gridRow: 0
+      },
+      {
+        id: 2,
+        header: '🌟 Star Widget',
+        content: 'Shining bright',
+        colSize: 2,
+        rowSize: 1,
+        gridCol: 1,
+        gridRow: 0
+      },
+      {
+        id: 3,
+        header: '🎨 Art Widget',
+        content: 'Creative expression',
+        colSize: 1,
+        rowSize: 2,
+        gridCol: 3,
+        gridRow: 0
+      },
+      {
+        id: 4,
+        header: '💻 Code Widget',
+        content: 'Building the future',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 0,
+        gridRow: 1
+      },
+      {
+        id: 5,
+        header: '🎵 Music Widget',
+        content: 'Harmony in motion',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 4,
+        gridRow: 0
+      },
+      {
+        id: 6,
+        header: '🌍 World Widget',
+        content: 'Connected globally',
+        colSize: 2,
+        rowSize: 2,
+        gridCol: 0,
+        gridRow: 2
+      },
+      {
+        id: 7,
+        header: '⚡ Energy Widget',
+        content: 'Powerful and fast',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 5,
+        gridRow: 0
+      },
+      {
+        id: 8,
+        header: '🎯 Target Widget',
+        content: 'Precision focused',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 2,
+        gridRow: 1
+      },
+      {
+        id: 9,
+        header: '🌈 Rainbow Widget',
+        content: 'Colorful diversity',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 4,
+        gridRow: 2
+      },
+      {
+        id: 10,
+        header: '🔮 Magic Widget',
+        content: 'Mysterious wonders',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 5,
+        gridRow: 1
+      },
+    ];
+  });
+
+  // Wrapper functions to save state to localStorage
+  const setGridWidthAndSave = (value: number) => {
+    setGridWidth(value);
+    localStorage.setItem('windowgrid_gridWidth', value.toString());
+  };
+
+  const setGridHeightAndSave = (value: number) => {
+    setGridHeight(value);
+    localStorage.setItem('windowgrid_gridHeight', value.toString());
+  };
+
+  const setGridColumnsAndSave = (value: number) => {
+    setGridColumns(value);
+    localStorage.setItem('windowgrid_gridColumns', value.toString());
+  };
+
+  const setGridRowsAndSave = (value: number) => {
+    setGridRows(value);
+    localStorage.setItem('windowgrid_gridRows', value.toString());
+  };
+
+  const setShowGridLinesAndSave = (value: boolean) => {
+    setShowGridLines(value);
+    localStorage.setItem('windowgrid_showGridLines', JSON.stringify(value));
+  };
+
+  const setShowHeadersAndSave = (value: boolean) => {
+    setShowHeaders(value);
+    localStorage.setItem('windowgrid_showHeaders', JSON.stringify(value));
+  };
+
+  const setDraggableAndSave = (value: boolean) => {
+    setDraggable(value);
+    localStorage.setItem('windowgrid_draggable', JSON.stringify(value));
+  };
+
+  const setInteractiveItemsAndSave = (items: GridItemType[]) => {
+    setInteractiveItems(items);
+    localStorage.setItem('windowgrid_widgets', JSON.stringify(items));
+  };
+
+  // Function to reset all settings to defaults
+  const resetToDefaults = () => {
+    // Clear localStorage
+    localStorage.removeItem('windowgrid_gridWidth');
+    localStorage.removeItem('windowgrid_gridHeight');
+    localStorage.removeItem('windowgrid_gridColumns');
+    localStorage.removeItem('windowgrid_gridRows');
+    localStorage.removeItem('windowgrid_showGridLines');
+    localStorage.removeItem('windowgrid_showHeaders');
+    localStorage.removeItem('windowgrid_draggable');
+    localStorage.removeItem('windowgrid_widgets');
+    
+    // Reset state to defaults
+    setGridWidth(200);
+    setGridHeight(150);
+    setGridColumns(6);
+    setGridRows(10);
+    setShowGridLines(true);
+    setShowHeaders(true);
+    setDraggable(true);
+    setReorderCount(0);
+    setInvalidDropMessage(null);
+    
+    // Reset widgets to default positions
+    const defaultWidgets = [
+      {
+        id: 1,
+        header: '🚀 Rocket Widget',
+        content: 'Ready for launch!',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 0,
+        gridRow: 0
+      },
+      {
+        id: 2,
+        header: '🌟 Star Widget',
+        content: 'Shining bright',
+        colSize: 2,
+        rowSize: 1,
+        gridCol: 1,
+        gridRow: 0
+      },
+      {
+        id: 3,
+        header: '🎨 Art Widget',
+        content: 'Creative expression',
+        colSize: 1,
+        rowSize: 2,
+        gridCol: 3,
+        gridRow: 0
+      },
+      {
+        id: 4,
+        header: '💻 Code Widget',
+        content: 'Building the future',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 0,
+        gridRow: 1
+      },
+      {
+        id: 5,
+        header: '🎵 Music Widget',
+        content: 'Harmony in motion',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 4,
+        gridRow: 0
+      },
+      {
+        id: 6,
+        header: '🌍 World Widget',
+        content: 'Connected globally',
+        colSize: 2,
+        rowSize: 2,
+        gridCol: 0,
+        gridRow: 2
+      },
+      {
+        id: 7,
+        header: '⚡ Energy Widget',
+        content: 'Powerful and fast',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 5,
+        gridRow: 0
+      },
+      {
+        id: 8,
+        header: '🎯 Target Widget',
+        content: 'Precision focused',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 2,
+        gridRow: 1
+      },
+      {
+        id: 9,
+        header: '🌈 Rainbow Widget',
+        content: 'Colorful diversity',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 4,
+        gridRow: 2
+      },
+      {
+        id: 10,
+        header: '🔮 Magic Widget',
+        content: 'Mysterious wonders',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 5,
+        gridRow: 1
+      },
+    ];
+    setInteractiveItems(defaultWidgets);
+  };
 
   // Function to generate placeholder items for empty grid spaces
   const generatePlaceholders = (items: GridItemType[]): GridItemType[] => {
@@ -325,7 +527,7 @@ const App: React.FC = () => {
             const newItems = placeWidgetAtPosition(draggedItem, targetItem.gridCol, targetItem.gridRow);
             console.log('Moving widget from', originalCol, originalRow, 'to', targetItem.gridCol, targetItem.gridRow, draggedItem.header);
             console.log('Original position will become a placeholder for future moves');
-            setInteractiveItems(newItems);
+            setInteractiveItemsAndSave(newItems);
             setReorderCount(prev => prev + 1);
 
             // Validate the new grid state
@@ -350,7 +552,7 @@ const App: React.FC = () => {
               const newItems = placeWidgetAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
               const updatedItems = placeWidgetAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
               console.log('Swapping widget positions:', draggedItem.header, 'and', targetRealItem.header);
-              setInteractiveItems(updatedItems);
+              setInteractiveItemsAndSave(updatedItems);
               setReorderCount(prev => prev + 1);
 
               // Validate the new grid state
@@ -511,7 +713,7 @@ const App: React.FC = () => {
               min="100"
               max="400"
               value={gridWidth}
-              onChange={(e) => setGridWidth(Number(e.target.value))}
+              onChange={(e) => setGridWidthAndSave(Number(e.target.value))}
             />
             <span>{gridWidth}px</span>
           </label>
@@ -525,7 +727,7 @@ const App: React.FC = () => {
               min="100"
               max="300"
               value={gridHeight}
-              onChange={(e) => setGridHeight(Number(e.target.value))}
+              onChange={(e) => setGridHeightAndSave(Number(e.target.value))}
             />
             <span>{gridHeight}px</span>
           </label>
@@ -539,7 +741,7 @@ const App: React.FC = () => {
               min="3"
               max="12"
               value={gridColumns}
-              onChange={(e) => setGridColumns(Number(e.target.value))}
+              onChange={(e) => setGridColumnsAndSave(Number(e.target.value))}
             />
             <span>{gridColumns}</span>
           </label>
@@ -553,7 +755,7 @@ const App: React.FC = () => {
               min="5"
               max="20"
               value={gridRows}
-              onChange={(e) => setGridRows(Number(e.target.value))}
+              onChange={(e) => setGridRowsAndSave(Number(e.target.value))}
             />
             <span>{gridRows}</span>
           </label>
@@ -564,7 +766,7 @@ const App: React.FC = () => {
             <input
               type="checkbox"
               checked={showGridLines}
-              onChange={(e) => setShowGridLines(e.target.checked)}
+              onChange={(e) => setShowGridLinesAndSave(e.target.checked)}
             />
             Show Grid Lines
           </label>
@@ -575,7 +777,7 @@ const App: React.FC = () => {
             <input
               type="checkbox"
               checked={showHeaders}
-              onChange={(e) => setShowHeaders(e.target.checked)}
+              onChange={(e) => setShowHeadersAndSave(e.target.checked)}
             />
             Show Headers
           </label>
@@ -586,7 +788,7 @@ const App: React.FC = () => {
             <input
               type="checkbox"
               checked={draggable}
-              onChange={(e) => setDraggable(e.target.checked)}
+              onChange={(e) => setDraggableAndSave(e.target.checked)}
             />
             Enable Dragging
           </label>
@@ -622,6 +824,77 @@ const App: React.FC = () => {
           fontSize: '0.9em'
         }}>
           <p>📐 <strong>Grid Size:</strong> {gridColumns} × {gridRows} = {gridColumns * gridRows} cells | Total Width: {gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px</p>
+        </div>
+
+        <div className="control-group" style={{ marginTop: '16px' }}>
+          <button
+            onClick={resetToDefaults}
+            style={{
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#c82333';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc3545';
+            }}
+          >
+            🔄 Reset to Defaults
+          </button>
+          <p style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
+            Clears all saved settings and widget positions
+          </p>
+        </div>
+
+        <div className="stored-data-display" style={{ marginTop: '16px' }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#333' }}>📦 Stored Data (localStorage):</h4>
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            borderRadius: '4px',
+            padding: '12px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            maxHeight: '200px',
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all'
+          }}>
+            {(() => {
+              const storedData: any = {};
+              
+              // Collect all stored data
+              storedData.gridWidth = localStorage.getItem('windowgrid_gridWidth');
+              storedData.gridHeight = localStorage.getItem('windowgrid_gridHeight');
+              storedData.gridColumns = localStorage.getItem('windowgrid_gridColumns');
+              storedData.gridRows = localStorage.getItem('windowgrid_gridRows');
+              storedData.showGridLines = localStorage.getItem('windowgrid_showGridLines');
+              storedData.showHeaders = localStorage.getItem('windowgrid_showHeaders');
+              storedData.draggable = localStorage.getItem('windowgrid_draggable');
+              
+              // Get widgets data (truncated for display)
+              const widgetsData = localStorage.getItem('windowgrid_widgets');
+              if (widgetsData) {
+                try {
+                  const parsed = JSON.parse(widgetsData);
+                  storedData.widgets = `[${parsed.length} widgets] - ${JSON.stringify(parsed.slice(0, 2))}...`;
+                } catch (error) {
+                  storedData.widgets = 'Error parsing widgets data';
+                }
+              } else {
+                storedData.widgets = 'No widgets data stored';
+              }
+              
+              return JSON.stringify(storedData, null, 2);
+            })()}
+          </div>
         </div>
       </div>
 
