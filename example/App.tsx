@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GridContainer, GridItem } from '../src';
 import { DebugInfo } from './DebugInfo';
 import { DragDebugTest } from './DragDebugTest';
 import './App.css';
+
+// Type definition for grid items
+interface GridItemType {
+  id: number;
+  header: string;
+  content: string;
+  colSize: number;
+  rowSize: number;
+  isPlaceholder?: boolean;
+  gridCol?: number;
+  gridRow?: number;
+}
 
 const App: React.FC = () => {
   const [gridWidth, setGridWidth] = useState(200);
@@ -11,64 +23,267 @@ const App: React.FC = () => {
   const [showHeaders, setShowHeaders] = useState(true);
   const [draggable, setDraggable] = useState(true);
   const [reorderCount, setReorderCount] = useState(0);
+  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>(null);
   const [debugDragState, setDebugDragState] = useState({
     isDragging: false,
     draggedItemId: null as string | number | null,
     draggedOverItemId: null as string | number | null,
   });
 
-  const [interactiveItems, setInteractiveItems] = useState([
+  const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>([
     {
       id: 1,
       header: '🚀 Rocket Widget',
-      content: 'Ready for launch!'
+      content: 'Ready for launch!',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 0,
+      gridRow: 0
     },
     {
       id: 2,
       header: '🌟 Star Widget',
-      content: 'Shining bright'
+      content: 'Shining bright',
+      colSize: 2,
+      rowSize: 1,
+      gridCol: 1,
+      gridRow: 0
     },
     {
       id: 3,
       header: '🎨 Art Widget',
-      content: 'Creative expression'
+      content: 'Creative expression',
+      colSize: 1,
+      rowSize: 2,
+      gridCol: 3,
+      gridRow: 0
     },
     {
       id: 4,
       header: '💻 Code Widget',
-      content: 'Building the future'
+      content: 'Building the future',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 0,
+      gridRow: 1
     },
     {
       id: 5,
       header: '🎵 Music Widget',
-      content: 'Harmony in motion'
+      content: 'Harmony in motion',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 4,
+      gridRow: 0
     },
     {
       id: 6,
       header: '🌍 World Widget',
-      content: 'Connected globally'
+      content: 'Connected globally',
+      colSize: 2,
+      rowSize: 2,
+      gridCol: 0,
+      gridRow: 2
     },
     {
       id: 7,
       header: '⚡ Energy Widget',
-      content: 'Powerful and fast'
+      content: 'Powerful and fast',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 5,
+      gridRow: 0
     },
     {
       id: 8,
       header: '🎯 Target Widget',
-      content: 'Precision focused'
+      content: 'Precision focused',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 2,
+      gridRow: 1
     },
     {
       id: 9,
       header: '🌈 Rainbow Widget',
-      content: 'Colorful diversity'
+      content: 'Colorful diversity',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 4,
+      gridRow: 2
     },
     {
       id: 10,
       header: '🔮 Magic Widget',
-      content: 'Mysterious wonders'
+      content: 'Mysterious wonders',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 4,
+      gridRow: 1
     },
   ]);
+
+  // Function to generate placeholder items for empty grid spaces
+  const generatePlaceholders = (items: GridItemType[], maxCols: number = 6): GridItemType[] => {
+    const placeholders: GridItemType[] = [];
+    let placeholderId = 1000; // Start placeholder IDs at 1000 to avoid conflicts
+    
+    // Create a grid representation to find empty spaces
+    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
+    
+    // Place existing items in the grid at their actual positions
+    items.forEach(item => {
+      if (item.gridCol !== undefined && item.gridRow !== undefined) {
+        // Place the item at its actual position
+        for (let r = item.gridRow; r < item.gridRow + item.rowSize; r++) {
+          for (let c = item.gridCol; c < item.gridCol + item.colSize; c++) {
+            if (r < 10 && c < maxCols) {
+              grid[c][r] = item.id;
+            }
+          }
+        }
+      }
+    });
+    
+    // Add placeholder items for empty spaces
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < maxCols; col++) {
+        if (grid[col][row] === null) {
+          placeholders.push({
+            id: placeholderId++,
+            header: '',
+            content: '',
+            colSize: 1,
+            rowSize: 1,
+            isPlaceholder: true,
+            gridCol: col,
+            gridRow: row
+          });
+          grid[col][row] = 'placeholder';
+        }
+      }
+    }
+    
+    console.log('Generated placeholders:', placeholders.length, 'for empty spaces');
+    return placeholders;
+  };
+
+  // Function to create placeholders for the original position when a widget moves
+  const createPlaceholdersForOriginalPosition = (widget: GridItemType, maxCols: number = 6): GridItemType[] => {
+    const placeholders: GridItemType[] = [];
+    let placeholderId = 1000;
+    
+    if (widget.gridCol !== undefined && widget.gridRow !== undefined) {
+      // Create placeholders for each grid cell the widget occupied
+      for (let row = widget.gridRow; row < widget.gridRow + widget.rowSize; row++) {
+        for (let col = widget.gridCol; col < widget.gridCol + widget.colSize; col++) {
+          placeholders.push({
+            id: placeholderId++,
+            header: '',
+            content: '',
+            colSize: 1,
+            rowSize: 1,
+            isPlaceholder: true,
+            gridCol: col,
+            gridRow: row
+          });
+        }
+      }
+    }
+    
+    return placeholders;
+  };
+
+  // Function to place a widget at a specific grid position
+  const placeWidgetAtPosition = (widget: GridItemType, targetCol: number, targetRow: number, maxCols: number = 6) => {
+    const newItems = [...interactiveItems];
+    
+    // Find the widget and update its position
+    const widgetIndex = newItems.findIndex(item => item.id === widget.id);
+    if (widgetIndex !== -1) {
+      // Update the widget's position instead of removing and re-adding
+      newItems[widgetIndex] = {
+        ...newItems[widgetIndex],
+        gridCol: targetCol,
+        gridRow: targetRow
+      };
+    }
+    
+    return newItems;
+  };
+
+  // Function to assign default grid positions to widgets
+  const assignDefaultPositions = (items: GridItemType[], maxCols: number = 6): GridItemType[] => {
+    const positionedItems: GridItemType[] = [];
+    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
+    
+    // First, place all items that already have positions
+    items.forEach(item => {
+      if (item.gridCol !== undefined && item.gridRow !== undefined) {
+        // Item already has a position, place it there
+        positionedItems.push(item);
+        for (let r = item.gridRow; r < item.gridRow + item.rowSize; r++) {
+          for (let c = item.gridCol; c < item.gridCol + item.colSize; c++) {
+            if (r < 10 && c < maxCols) {
+              grid[c][r] = item.id;
+            }
+          }
+        }
+      }
+    });
+    
+    // Then, find positions for items that don't have coordinates yet
+    items.forEach(item => {
+      if (item.gridCol === undefined || item.gridRow === undefined) {
+        // Find next available position for this item
+        let placed = false;
+        for (let row = 0; row < 10 && !placed; row++) {
+          for (let col = 0; col < maxCols && !placed; col++) {
+            let canPlace = true;
+            
+            // Check if the item can fit at current position
+            for (let r = row; r < row + item.rowSize; r++) {
+              for (let c = col; c < col + item.colSize; c++) {
+                if (r >= 10 || c >= maxCols || grid[c][r] !== null) {
+                  canPlace = false;
+                  break;
+                }
+              }
+              if (!canPlace) break;
+            }
+            
+            if (canPlace) {
+              // Place the item
+              const positionedItem = {
+                ...item,
+                gridCol: col,
+                gridRow: row
+              };
+              positionedItems.push(positionedItem);
+              
+              for (let r = row; r < row + item.rowSize; r++) {
+                for (let c = col; c < col + item.colSize; c++) {
+                  grid[c][r] = item.id;
+                }
+              }
+              placed = true;
+            }
+          }
+        }
+      }
+    });
+    
+    return positionedItems;
+  };
+
+  // Combine real items with placeholders
+  const positionedItems = interactiveItems; // All widgets already have positions
+  const allGridItems = [...positionedItems, ...generatePlaceholders(positionedItems)];
+
+  // Validate grid state to detect overlaps
+  useEffect(() => {
+    validateGridState(positionedItems);
+  }, [positionedItems]);
 
   // Interactive grid drag handlers (based on working debug test)
   const handleInteractiveDragStart = (e: React.DragEvent, itemId: string | number) => {
@@ -91,20 +306,63 @@ const App: React.FC = () => {
     console.log('Interactive drop - dragged:', draggedItemId, 'target:', targetItemId);
     
     if (draggedItemId && draggedItemId !== targetItemId.toString()) {
-      const draggedIndex = interactiveItems.findIndex(item => item.id.toString() === draggedItemId);
-      const targetIndex = interactiveItems.findIndex(item => item.id === targetItemId);
+      const draggedItem = positionedItems.find(item => item.id.toString() === draggedItemId);
+      const targetItem = allGridItems.find(item => item.id === targetItemId);
       
-      console.log('Found indices - dragged:', draggedIndex, 'target:', targetIndex);
+      console.log('Found dragged item:', draggedItem, 'target item:', targetItem);
       
-      if (draggedIndex !== -1 && targetIndex !== -1) {
-        const newItems = [...interactiveItems];
-        
-        // Swap the items instead of reordering
-        [newItems[draggedIndex], newItems[targetIndex]] = [newItems[targetIndex], newItems[draggedIndex]];
-        
-        console.log('Swapping items:', newItems.map(item => item.header));
-        setInteractiveItems(newItems);
-        setReorderCount(prev => prev + 1);
+      if (draggedItem && targetItem) {
+        if (targetItem.isPlaceholder && targetItem.gridCol !== undefined && targetItem.gridRow !== undefined) {
+          // If dropping on a placeholder, check if the widget can fit there
+          if (canWidgetFitAtPosition(draggedItem, targetItem.gridCol, targetItem.gridRow)) {
+            // Store the original position before moving
+            const originalCol = draggedItem.gridCol;
+            const originalRow = draggedItem.gridRow;
+            
+            // Move the widget to the new position
+            const newItems = placeWidgetAtPosition(draggedItem, targetItem.gridCol, targetItem.gridRow);
+            console.log('Moving widget from', originalCol, originalRow, 'to', targetItem.gridCol, targetItem.gridRow, draggedItem.header);
+            console.log('Original position will become a placeholder for future moves');
+            setInteractiveItems(newItems);
+            setReorderCount(prev => prev + 1);
+            
+            // Validate the new grid state
+            setTimeout(() => {
+              validateGridState(newItems);
+            }, 100);
+          } else {
+            console.log('Widget cannot fit at this position:', draggedItem.header);
+            // Show feedback that the move is not allowed
+            setInvalidDropMessage(`Cannot place ${draggedItem.header} here - not enough space`);
+            setTimeout(() => setInvalidDropMessage(null), 3000);
+          }
+        } else if (!targetItem.isPlaceholder) {
+          // If dropping on another widget, check if they can swap positions
+          const targetRealItem = positionedItems.find(item => item.id === targetItemId);
+          if (targetRealItem && targetRealItem.gridCol !== undefined && targetRealItem.gridRow !== undefined) {
+            const draggedCanFitAtTarget = canWidgetFitAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
+            const targetCanFitAtDragged = canWidgetFitAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
+            
+            if (draggedCanFitAtTarget && targetCanFitAtDragged) {
+              // Both widgets can fit in each other's positions, so swap them
+              const newItems = placeWidgetAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
+              const updatedItems = placeWidgetAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
+              console.log('Swapping widget positions:', draggedItem.header, 'and', targetRealItem.header);
+              setInteractiveItems(updatedItems);
+              setReorderCount(prev => prev + 1);
+              
+              // Validate the new grid state
+              setTimeout(() => {
+                validateGridState(updatedItems);
+              }, 100);
+            } else {
+              console.log('Widgets cannot swap positions due to size constraints');
+              // Show feedback that the swap is not allowed
+              setInvalidDropMessage(`Cannot swap ${draggedItem.header} and ${targetRealItem.header} - size mismatch`);
+              setTimeout(() => setInvalidDropMessage(null), 3000);
+            }
+          }
+        }
       }
     }
   };
@@ -146,6 +404,93 @@ const App: React.FC = () => {
       draggedItemId: null,
       draggedOverItemId: null,
     });
+  };
+
+  // Function to check if a widget can fit at a specific grid position
+  const canWidgetFitAtPosition = (widget: GridItemType, targetCol: number, targetRow: number, maxCols: number = 6): boolean => {
+    // Check if the widget would fit within grid bounds
+    if (targetCol + widget.colSize > maxCols || targetRow + widget.rowSize > 10) {
+      console.log('Widget would exceed grid bounds:', widget.header, 'at', targetCol, targetRow);
+      return false;
+    }
+    
+    // Check if the space is occupied by other widgets
+    for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
+      for (let col = targetCol; col < targetCol + widget.colSize; col++) {
+        const existingItem = positionedItems.find(item => 
+          item.gridCol !== undefined && 
+          item.gridRow !== undefined &&
+          item.id !== widget.id && // Don't check against the widget itself
+          col >= item.gridCol && 
+          col < item.gridCol + item.colSize &&
+          row >= item.gridRow && 
+          row < item.gridRow + item.rowSize
+        );
+        
+        if (existingItem) {
+          console.log('Collision detected:', widget.header, 'would overlap with', existingItem.header, 'at position', col, row);
+          console.log('Widget dimensions:', widget.colSize, 'x', widget.rowSize, 'at', targetCol, targetRow);
+          console.log('Existing widget dimensions:', existingItem.colSize, 'x', existingItem.rowSize, 'at', existingItem.gridCol, existingItem.gridRow);
+          return false; // Space is occupied
+        }
+      }
+    }
+    
+    console.log('Widget can fit at position:', widget.header, 'at', targetCol, targetRow);
+    return true; // Widget can fit here
+  };
+
+  // Function to find the best available position for a widget
+  const findBestPositionForWidget = (widget: GridItemType, maxCols: number = 6): { col: number, row: number } | null => {
+    // Try to find the first available position
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < maxCols; col++) {
+        if (canWidgetFitAtPosition(widget, col, row, maxCols)) {
+          return { col, row };
+        }
+      }
+    }
+    return null; // No position available
+  };
+
+  // Function to validate the current grid state and detect overlaps
+  const validateGridState = (items: GridItemType[], maxCols: number = 6): void => {
+    const grid = Array(maxCols).fill(null).map(() => Array(10).fill(null));
+    const overlaps: Array<{widget1: GridItemType, widget2: GridItemType, position: [number, number]}> = [];
+    
+    // Place all widgets in the grid and detect overlaps
+    items.forEach(item => {
+      if (item.gridCol !== undefined && item.gridRow !== undefined) {
+        for (let row = item.gridRow; row < item.gridRow + item.rowSize; row++) {
+          for (let col = item.gridCol; col < item.gridCol + item.colSize; col++) {
+            if (row < 10 && col < maxCols) {
+              if (grid[col][row] !== null) {
+                // Found an overlap
+                const existingWidget = items.find(w => w.id === grid[col][row]);
+                if (existingWidget) {
+                  overlaps.push({
+                    widget1: item,
+                    widget2: existingWidget,
+                    position: [col, row]
+                  });
+                }
+              } else {
+                grid[col][row] = item.id;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (overlaps.length > 0) {
+      console.error('Grid validation failed - overlaps detected:', overlaps);
+      overlaps.forEach(overlap => {
+        console.error(`Overlap at position ${overlap.position}: ${overlap.widget1.header} overlaps with ${overlap.widget2.header}`);
+      });
+    } else {
+      console.log('Grid validation passed - no overlaps detected');
+    }
   };
 
   return (
@@ -229,13 +574,33 @@ const App: React.FC = () => {
             <p>🔄 Widgets reordered {reorderCount} time{reorderCount !== 1 ? 's' : ''}</p>
           </div>
         )}
+
+        {invalidDropMessage && (
+          <div className="invalid-drop-message" style={{
+            backgroundColor: '#ffebee',
+            color: '#c62828',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            border: '1px solid #ffcdd2',
+            marginTop: '8px',
+            fontSize: '0.9em'
+          }}>
+            <p>⚠️ {invalidDropMessage}</p>
+          </div>
+        )}
       </div>
 
       <div className="demo-section">
         <h2>Interactive Draggable Grid (Simple Implementation)</h2>
         <p>Drag the header bars to rearrange the widgets! This uses the same logic as the working debug test.</p>
         <p style={{ color: '#666', fontSize: '0.9em' }}>
-          💡 <strong>Tip:</strong> Click and drag the gray header bars to move widgets around.
+          💡 <strong>Tip:</strong> Click and drag the gray header bars to move widgets around. You can also drop widgets into the dashed placeholder areas to fill empty grid spaces!
+        </p>
+        <p style={{ color: '#666', fontSize: '0.9em' }}>
+          📏 <strong>Size Rules:</strong> Widgets can only move to spaces that can accommodate their size. Large widgets can't fit in small spaces, and widgets can only swap if they have the same dimensions.
+        </p>
+        <p style={{ color: '#666', fontSize: '0.9em' }}>
+          🚫 <strong>No Displacement:</strong> When a widget moves to an empty space, other widgets stay in their positions. The original position becomes available as a drop target.
         </p>
         
         <div className="grid-demo">
@@ -249,27 +614,50 @@ const App: React.FC = () => {
             width: '100%',
             maxWidth: '1200px'
           }}>
-            {interactiveItems.map((item) => (
+            {allGridItems.map((item) => (
               <div
                 key={item.id}
-                draggable={draggable}
-                onDragStart={(e) => handleInteractiveDragStart(e, item.id)}
+                draggable={draggable && !item.isPlaceholder}
+                onDragStart={(e) => !item.isPlaceholder && handleInteractiveDragStart(e, item.id)}
                 onDragEnd={handleInteractiveDragEnd}
                 onDragOver={handleInteractiveDragOver}
                 onDrop={(e) => handleInteractiveDrop(e, item.id)}
+                onMouseEnter={(e) => {
+                  if (item.isPlaceholder) {
+                    e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    e.currentTarget.style.border = '2px dashed #2196f3';
+                    e.currentTarget.style.opacity = '0.8';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (item.isPlaceholder) {
+                    e.currentTarget.style.backgroundColor = '#f8f9fa';
+                    e.currentTarget.style.border = '2px dashed #ddd';
+                    e.currentTarget.style.opacity = '0.6';
+                  }
+                }}
                 style={{
                   width: '100%',
-                  height: `${gridHeight}px`,
-                  backgroundColor: '#ffffff',
+                  height: '100%',
+                  backgroundColor: item.isPlaceholder ? 'transparent' : '#ffffff',
                   border: showGridLines ? '1px solid #ccc' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   boxSizing: 'border-box',
-                  cursor: draggable ? 'grab' : 'default',
-                  userSelect: 'none'
+                  cursor: item.isPlaceholder ? 'default' : (draggable ? 'grab' : 'default'),
+                  userSelect: 'none',
+                  gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
+                  gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
+                  minHeight: item.isPlaceholder ? '20px' : 'auto',
+                  transition: 'all 0.2s ease',
+                  ...(item.isPlaceholder && {
+                    border: '2px dashed #ddd',
+                    backgroundColor: '#f8f9fa',
+                    opacity: 0.6
+                  })
                 }}
               >
-                {showHeaders && (
+                {showHeaders && !item.isPlaceholder && (
                   <div style={{
                     height: '32px',
                     backgroundColor: '#f8f9fa',
@@ -286,17 +674,19 @@ const App: React.FC = () => {
                     {draggable && <span>⋮⋮</span>}
                   </div>
                 )}
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px',
-                  textAlign: 'center',
-                  color: '#333'
-                }}>
-                  {item.content}
-                </div>
+                {!item.isPlaceholder && (
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    textAlign: 'center',
+                    color: '#333'
+                  }}>
+                    {item.content}
+                  </div>
+                )}
               </div>
             ))}
           </div>
