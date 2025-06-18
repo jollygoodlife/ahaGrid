@@ -197,10 +197,11 @@ const App: React.FC = () => {
       
       if (draggedIndex !== -1 && targetIndex !== -1) {
         const newItems = [...interactiveItems];
-        const [draggedItem] = newItems.splice(draggedIndex, 1);
-        newItems.splice(targetIndex, 0, draggedItem);
         
-        console.log('Reordering interactive items:', newItems.map(item => item.header));
+        // Swap the items instead of reordering
+        [newItems[draggedIndex], newItems[targetIndex]] = [newItems[targetIndex], newItems[draggedIndex]];
+        
+        console.log('Swapping items:', newItems.map(item => item.header));
         setInteractiveItems(newItems);
         setReorderCount(prev => prev + 1);
       }
