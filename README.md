@@ -2,6 +2,9 @@
 
 A flexible and interactive grid layout component for React, supporting drag-and-drop widgets with multi-cell support.
 
+## Demo
+![Demo](/ahaGrid.gif)
+
 ## Features
 
 - **Draggable Widgets**: Move widgets around the grid using drag-and-drop.
