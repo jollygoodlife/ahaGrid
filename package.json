@@ -1,7 +1,7 @@
 {
   "name": "windowgrid",
   "version": "1.0.0",
-  "description": "A flexible grid container library for React",
+  "description": "Re-arrangable grid layout component for React",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

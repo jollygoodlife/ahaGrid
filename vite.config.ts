@@ -4,11 +4,11 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  root: 'example',
+  root: 'src',
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'WindowGrid',
+      name: 'ahaGrid',
       fileName: 'index',
       formats: ['es', 'umd']
     },
@@ -22,9 +22,4 @@ export default defineConfig({
       }
     }
   },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  }
 }) 

@@ -513,7 +513,7 @@ const App: React.FC = () => {
     <div className="app">
       <header className="app-header">
         <h1>ahaGrid</h1>
-        <p>A flexible grid container component with re-arrangable widgets</p>
+        <p>A flexible grid layout component with re-arrangable widgets</p>
       </header>
 
       <div className="controls">
