@@ -19,7 +19,7 @@ A flexible and interactive grid layout component for React, supporting drag-and-
   
 ```tsx
 import React, { useState } from 'react';
-import App from './App'; // Or your main entry point
+import AhaGrid from './ahaGrid';
 
 function MyGridApp() {
   return <AhaGrid />;

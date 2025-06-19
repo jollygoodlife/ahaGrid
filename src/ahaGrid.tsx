@@ -321,7 +321,7 @@ const AhaGrid: React.FC = () => {
     setDraggedWidget(widget || null);
   };
 
-  const handleInteractiveDragEnd = (e: React.DragEvent) => {
+  const handleInteractiveDragEnd = (_: React.DragEvent) => {
     console.log('Interactive drag end');
     setDraggedWidget(null);
     setHoveredCell(null);
@@ -377,7 +377,6 @@ const AhaGrid: React.FC = () => {
             console.log('Moving widget from', originalCol, originalRow, 'to', targetItem.gridCol, targetItem.gridRow, draggedItem.header);
             console.log('Original position will become a placeholder for future moves');
             setInteractiveItemsAndSave(newItems);
-            setReorderCount(prev => prev + 1);
 
             // Validate the new grid state
             setTimeout(() => {
@@ -420,7 +419,6 @@ const AhaGrid: React.FC = () => {
               };
 
               setInteractiveItemsAndSave(newItems);
-              setReorderCount(prev => prev + 1);
 
               setTimeout(() => {
                 validateGridState(newItems);
@@ -582,14 +580,14 @@ const AhaGrid: React.FC = () => {
                     setHoveredCell(null);
                   }}
                   onDragLeave={() => setHoveredCell(null)}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(_) => {
                     // if (item.isPlaceholder) {
                     // e.currentTarget.style.backgroundColor = '#e3f2fd';
                     // e.currentTarget.style.border = '2px dashed #2196f3';
                     // e.currentTarget.style.opacity = '0';
                     // }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(_) => {
                     // if (item.isPlaceholder) {
                     // e.currentTarget.style.backgroundColor = '#ffffff';
                     // e.currentTarget.style.border = 'none';

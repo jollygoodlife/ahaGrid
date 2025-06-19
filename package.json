@@ -5,27 +5,36 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "vite build",
     "dev": "vite",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
-  "keywords": ["grid", "react", "typescript", "layout"],
+  "keywords": [
+    "grid",
+    "react",
+    "typescript",
+    "layout"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
-  }
-} 
+  },
+  "homepage": "https://desmundyeng.github.io/ahaGrid"
+}
