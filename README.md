@@ -1,6 +1,6 @@
-# WindowGrid
+# ahaGrid
 
-A flexible and interactive grid container component for React, supporting draggable, resizable, and swappable widgets with multi-cell support.
+A flexible and interactive grid layout component for React, supporting drag-and-drop widgets with multi-cell support.
 
 ## Features
 
@@ -15,12 +15,14 @@ A flexible and interactive grid container component for React, supporting dragga
 
 ## Usage Example
 
+1. Copy ahaGrid.tsx and ahaGrid.css to your project
+  
 ```tsx
 import React, { useState } from 'react';
 import App from './App'; // Or your main entry point
 
 function MyGridApp() {
-  return <App />;
+  return <AhaGrid />;
 }
 ```
 
@@ -58,7 +60,3 @@ function MyGridApp() {
    npm run dev
    ```
 4. Open your browser to `http://localhost:5173`
-
-## License
-
-MIT 
