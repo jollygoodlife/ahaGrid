@@ -1,0 +1,34 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Local env files
+.env
+.env.*
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mac system files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Local coverage reports
+coverage/
+
+# Optional: ignore local IDE/project files
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# GitHub Pages branch (if you check it out locally)
+gh-pages/ 

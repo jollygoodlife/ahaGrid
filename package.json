@@ -1,5 +1,5 @@
 {
-  "name": "windowgrid",
+  "name": "ahagrid",
   "version": "1.0.0",
   "description": "Re-arrangable grid layout component for React",
   "main": "dist/index.js",
