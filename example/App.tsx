@@ -16,50 +16,43 @@ interface GridItemType {
 const App: React.FC = () => {
   // Load initial state from localStorage or use defaults
   const [gridWidth, setGridWidth] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_gridWidth');
+    const saved = localStorage.getItem('ahagrid_gridWidth');
     return saved ? Number(saved) : 200;
   });
-  
+
   const [gridHeight, setGridHeight] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_gridHeight');
-    return saved ? Number(saved) : 150;
-  });
-  
-  const [gridColumns, setGridColumns] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_gridColumns');
-    return saved ? Number(saved) : 6;
-  });
-  
-  const [gridRows, setGridRows] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_gridRows');
-    return saved ? Number(saved) : 10;
-  });
-  
-  const [showGridLines, setShowGridLines] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_showGridLines');
-    return saved ? JSON.parse(saved) : true;
-  });
-  
-  const [showHeaders, setShowHeaders] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_showHeaders');
-    return saved ? JSON.parse(saved) : true;
-  });
-  
-  const [draggable, setDraggable] = useState(() => {
-    const saved = localStorage.getItem('windowgrid_draggable');
-    return saved ? JSON.parse(saved) : true;
-  });
-  
-  const [reorderCount, setReorderCount] = useState(0);
-  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>(null);
-  const [debugDragState, setDebugDragState] = useState({
-    isDragging: false,
-    draggedItemId: null as string | number | null,
-    draggedOverItemId: null as string | number | null,
+    const saved = localStorage.getItem('ahagrid_gridHeight');
+    return saved ? Number(saved) : 100;
   });
 
+  const [gridColumns, setGridColumns] = useState(() => {
+    const saved = localStorage.getItem('ahagrid_gridColumns');
+    return saved ? Number(saved) : 6;
+  });
+
+  const [gridRows, setGridRows] = useState(() => {
+    const saved = localStorage.getItem('ahagrid_gridRows');
+    return saved ? Number(saved) : 5;
+  });
+
+  const [showGridLines, setShowGridLines] = useState(() => {
+    const saved = localStorage.getItem('ahagrid_showGridLines');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  const [showHeaders, setShowHeaders] = useState(() => {
+    const saved = localStorage.getItem('ahagrid_showHeaders');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  const [draggable, setDraggable] = useState(() => {
+    const saved = localStorage.getItem('ahagrid_draggable');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  const [invalidDropMessage, setInvalidDropMessage] = useState<string | null>(null);
   const [draggedWidget, setDraggedWidget] = useState<GridItemType | null>(null);
-  const [hoveredCell, setHoveredCell] = useState<{col: number, row: number} | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<{ col: number, row: number } | null>(null);
 
   const defaultWidgets = [
     {
@@ -156,7 +149,7 @@ const App: React.FC = () => {
 
   // Load widget positions from localStorage or use defaults
   const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>(() => {
-    const saved = localStorage.getItem('windowgrid_widgets');
+    const saved = localStorage.getItem('ahagrid_widgets');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -170,65 +163,64 @@ const App: React.FC = () => {
   // Wrapper functions to save state to localStorage
   const setGridWidthAndSave = (value: number) => {
     setGridWidth(value);
-    localStorage.setItem('windowgrid_gridWidth', value.toString());
+    localStorage.setItem('ahagrid_gridWidth', value.toString());
   };
 
   const setGridHeightAndSave = (value: number) => {
     setGridHeight(value);
-    localStorage.setItem('windowgrid_gridHeight', value.toString());
+    localStorage.setItem('ahagrid_gridHeight', value.toString());
   };
 
   const setGridColumnsAndSave = (value: number) => {
     setGridColumns(value);
-    localStorage.setItem('windowgrid_gridColumns', value.toString());
+    localStorage.setItem('ahagrid_gridColumns', value.toString());
   };
 
   const setGridRowsAndSave = (value: number) => {
     setGridRows(value);
-    localStorage.setItem('windowgrid_gridRows', value.toString());
+    localStorage.setItem('ahagrid_gridRows', value.toString());
   };
 
   const setShowGridLinesAndSave = (value: boolean) => {
     setShowGridLines(value);
-    localStorage.setItem('windowgrid_showGridLines', JSON.stringify(value));
+    localStorage.setItem('ahagrid_showGridLines', JSON.stringify(value));
   };
 
   const setShowHeadersAndSave = (value: boolean) => {
     setShowHeaders(value);
-    localStorage.setItem('windowgrid_showHeaders', JSON.stringify(value));
+    localStorage.setItem('ahagrid_showHeaders', JSON.stringify(value));
   };
 
   const setDraggableAndSave = (value: boolean) => {
     setDraggable(value);
-    localStorage.setItem('windowgrid_draggable', JSON.stringify(value));
+    localStorage.setItem('ahagrid_draggable', JSON.stringify(value));
   };
 
   const setInteractiveItemsAndSave = (items: GridItemType[]) => {
     setInteractiveItems(items);
-    localStorage.setItem('windowgrid_widgets', JSON.stringify(items));
+    localStorage.setItem('ahagrid_widgets', JSON.stringify(items));
   };
 
   // Function to reset all settings to defaults
   const resetToDefaults = () => {
     // Clear localStorage
-    localStorage.removeItem('windowgrid_gridWidth');
-    localStorage.removeItem('windowgrid_gridHeight');
-    localStorage.removeItem('windowgrid_gridColumns');
-    localStorage.removeItem('windowgrid_gridRows');
-    localStorage.removeItem('windowgrid_showGridLines');
-    localStorage.removeItem('windowgrid_showHeaders');
-    localStorage.removeItem('windowgrid_draggable');
-    localStorage.removeItem('windowgrid_widgets');
-    
+    localStorage.removeItem('ahagrid_gridWidth');
+    localStorage.removeItem('ahagrid_gridHeight');
+    localStorage.removeItem('ahagrid_gridColumns');
+    localStorage.removeItem('ahagrid_gridRows');
+    localStorage.removeItem('ahagrid_showGridLines');
+    localStorage.removeItem('ahagrid_showHeaders');
+    localStorage.removeItem('ahagrid_draggable');
+    localStorage.removeItem('ahagrid_widgets');
+
     // Reset state to defaults
     setGridWidth(200);
-    setGridHeight(150);
+    setGridHeight(100);
     setGridColumns(6);
-    setGridRows(10);
+    setGridRows(5);
     setShowGridLines(true);
     setShowHeaders(true);
     setDraggable(true);
-    setReorderCount(0);
     setInvalidDropMessage(null);
     setInteractiveItems(defaultWidgets);
   };
@@ -323,7 +315,7 @@ const App: React.FC = () => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     if (item.gridCol !== undefined && item.gridRow !== undefined) {
-      setHoveredCell({col: item.gridCol, row: item.gridRow});
+      setHoveredCell({ col: item.gridCol, row: item.gridRow });
     }
   };
 
@@ -520,11 +512,178 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>WindowGrid Library</h1>
-        <p>A flexible grid container component with draggable widgets</p>
+        <h1>ahaGrid</h1>
+        <p>A flexible grid container component with re-arrangable widgets</p>
       </header>
 
       <div className="controls">
+        <h2>Demo</h2>
+        <p>Drag the ⋮⋮ handle in widget headers to rearrange widgets</p>
+        <p style={{ color: '#666', fontSize: '0.9em' }}>
+          💡 <strong>Tip:</strong> Click and drag the ⋮⋮ handle in the header to move widgets around. You can also drop widgets into the dashed placeholder areas to fill empty grid spaces!
+        </p>
+        <p style={{ color: '#666', fontSize: '0.9em' }}>
+          📏 <strong>Size Rules:</strong> Widgets can only move to spaces that can accommodate their size. Large widgets can't fit in small spaces, and widgets can only swap if they have the same dimensions.
+        </p>
+        <p style={{ color: '#666', fontSize: '0.9em' }}>
+          🚫 <strong>No Displacement:</strong> When a widget moves to an empty space, other widgets stay in their positions. The original position becomes available as a drop target.
+        </p>
+
+        <div className="grid-demo">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${gridColumns}, ${gridWidth}px)`,
+            gridAutoRows: `${gridHeight}px`,
+            gap: showGridLines ? '1px' : '0px',
+            padding: showGridLines ? '1px' : '0px',
+            // backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
+            backgroundColor: 'transparent',
+            width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
+            maxWidth: '100%'
+          }}>
+            {allGridItems.map((item) => {
+              // Highlight logic for all cells the dragged widget would occupy
+              let highlight = false;
+              if (
+                draggedWidget &&
+                hoveredCell &&
+                isCellInDraggedArea(item.gridCol ?? -1, item.gridRow ?? -1) &&
+                isValidDraggedWidgetPlacement()
+              ) {
+                highlight = true;
+              }
+
+              return (
+                <div
+                  key={item.id}
+                  data-widget-id={item.id}
+                  onDragEnd={handleInteractiveDragEnd}
+                  onDragOver={(e) => handleInteractiveDragOver(e, item)}
+                  onDrop={(e) => {
+                    if (isValidDraggedWidgetPlacement()) {
+                      handleInteractiveDrop(e, item.id);
+                    }
+                    setHoveredCell(null);
+                  }}
+                  onDragLeave={() => setHoveredCell(null)}
+                  onMouseEnter={(e) => {
+                    // if (item.isPlaceholder) {
+                    // e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    // e.currentTarget.style.border = '2px dashed #2196f3';
+                    // e.currentTarget.style.opacity = '0';
+                    // }
+                  }}
+                  onMouseLeave={(e) => {
+                    // if (item.isPlaceholder) {
+                    // e.currentTarget.style.backgroundColor = '#ffffff';
+                    // e.currentTarget.style.border = 'none';
+                    // e.currentTarget.style.opacity = '1';
+                    // }
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    // backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
+                    // border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxSizing: 'border-box',
+                    cursor: item.isPlaceholder ? 'default' : 'default',
+                    userSelect: 'none',
+                    gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
+                    gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
+                    minHeight: item.isPlaceholder ? '20px' : 'auto',
+                    transition: 'all 0.2s ease',
+
+                    ...(item.isPlaceholder && isDragging && !highlight && {
+                      border: '2px dashed #ddd',
+                      // backgroundColor: '#e3f2fd',
+                    }),
+                    ...(item.isPlaceholder && isDragging && highlight && {
+                      border: '2px dashed #2196f3',
+                      // backgroundColor: '#e3f2fd',
+                    }),
+
+                    ...(!item.isPlaceholder && {
+                      backgroundColor: '#ffffff',
+                      border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
+                    }),
+
+                  }}
+                >
+                  {showHeaders && !item.isPlaceholder && (
+                    <div style={{
+                      height: '48px',
+                      backgroundColor: '#f8f9fa',
+                      borderBottom: '1px solid #e9ecef',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0px 8px 0 4px',
+                      cursor: 'default',
+                      userSelect: 'none',
+                      fontWeight: 'bold'
+                    }}>
+                      {draggable && (
+                        <span
+                          draggable={true}
+                          onDragStart={(e) => {
+                            handleInteractiveDragStart(e, item.id);
+                            // Set custom drag image to show the entire widget
+                            const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
+                            if (widgetElement) {
+                              e.dataTransfer.setDragImage(widgetElement, 20, 20);
+                            }
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '32px',
+                            height: '32px',
+                            padding: '0px',
+                            cursor: 'grab',
+                            borderRadius: '50%',
+                            transition: 'background-color 0.2s ease',
+                            userSelect: 'none'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e3f2fd';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                          onMouseDown={(e) => {
+                            e.currentTarget.style.cursor = 'grabbing';
+                          }}
+                          onMouseUp={(e) => {
+                            e.currentTarget.style.cursor = 'grab';
+                          }}
+                        >
+                          ⋮⋮
+                        </span>
+                      )}
+                      <span style={{ paddingLeft: "0.5rem" }}>{item.header}</span>
+                    </div>
+                  )}
+                  {!item.isPlaceholder && (
+                    <div style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '8px',
+                      textAlign: 'center',
+                      color: '#333'
+                    }}>
+                      {item.content}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="control-group">
           <label>
             Grid Width (px):
@@ -614,12 +773,6 @@ const App: React.FC = () => {
           </label>
         </div>
 
-        {reorderCount > 0 && (
-          <div className="reorder-info">
-            <p>🔄 Widgets reordered {reorderCount} time{reorderCount !== 1 ? 's' : ''}</p>
-          </div>
-        )}
-
         {invalidDropMessage && (
           <div className="invalid-drop-message" style={{
             backgroundColor: '#ffebee',
@@ -689,18 +842,18 @@ const App: React.FC = () => {
           }}>
             {(() => {
               const storedData: any = {};
-              
+
               // Collect all stored data
-              storedData.gridWidth = localStorage.getItem('windowgrid_gridWidth');
-              storedData.gridHeight = localStorage.getItem('windowgrid_gridHeight');
-              storedData.gridColumns = localStorage.getItem('windowgrid_gridColumns');
-              storedData.gridRows = localStorage.getItem('windowgrid_gridRows');
-              storedData.showGridLines = localStorage.getItem('windowgrid_showGridLines');
-              storedData.showHeaders = localStorage.getItem('windowgrid_showHeaders');
-              storedData.draggable = localStorage.getItem('windowgrid_draggable');
-              
+              storedData.gridWidth = localStorage.getItem('ahagrid_gridWidth');
+              storedData.gridHeight = localStorage.getItem('ahagrid_gridHeight');
+              storedData.gridColumns = localStorage.getItem('ahagrid_gridColumns');
+              storedData.gridRows = localStorage.getItem('ahagrid_gridRows');
+              storedData.showGridLines = localStorage.getItem('ahagrid_showGridLines');
+              storedData.showHeaders = localStorage.getItem('ahagrid_showHeaders');
+              storedData.draggable = localStorage.getItem('ahagrid_draggable');
+
               // Get widgets data (truncated for display)
-              const widgetsData = localStorage.getItem('windowgrid_widgets');
+              const widgetsData = localStorage.getItem('ahagrid_widgets');
               if (widgetsData) {
                 try {
                   const parsed = JSON.parse(widgetsData);
@@ -711,181 +864,13 @@ const App: React.FC = () => {
               } else {
                 storedData.widgets = 'No widgets data stored';
               }
-              
+
               return JSON.stringify(storedData, null, 2);
             })()}
           </div>
         </div>
-      </div>
 
-      <div className="demo-section">
-        <h2>Interactive Draggable Grid (Simple Implementation)</h2>
-        <p>Drag the ⋮⋮ handle in widget headers to rearrange widgets (simple implementation)</p>
-        <p style={{ color: '#666', fontSize: '0.9em' }}>
-          💡 <strong>Tip:</strong> Click and drag the ⋮⋮ handle in the header to move widgets around. You can also drop widgets into the dashed placeholder areas to fill empty grid spaces!
-        </p>
-        <p style={{ color: '#666', fontSize: '0.9em' }}>
-          📏 <strong>Size Rules:</strong> Widgets can only move to spaces that can accommodate their size. Large widgets can't fit in small spaces, and widgets can only swap if they have the same dimensions.
-        </p>
-        <p style={{ color: '#666', fontSize: '0.9em' }}>
-          🚫 <strong>No Displacement:</strong> When a widget moves to an empty space, other widgets stay in their positions. The original position becomes available as a drop target.
-        </p>
 
-        <div className="grid-demo">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${gridColumns}, ${gridWidth}px)`,
-            gridAutoRows: `${gridHeight}px`,
-            gap: showGridLines ? '1px' : '0px',
-            padding: showGridLines ? '1px' : '0px',
-            // backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
-            backgroundColor: 'transparent',
-            width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
-            maxWidth: '100%'
-          }}>
-            {allGridItems.map((item) => {
-              // Highlight logic for all cells the dragged widget would occupy
-              let highlight = false;
-              if (
-                draggedWidget &&
-                hoveredCell &&
-                isCellInDraggedArea(item.gridCol ?? -1, item.gridRow ?? -1) &&
-                isValidDraggedWidgetPlacement()
-              ) {
-                highlight = true;
-              }
-
-              return (
-                <div
-                  key={item.id}
-                  data-widget-id={item.id}
-                  onDragEnd={handleInteractiveDragEnd}
-                  onDragOver={(e) => handleInteractiveDragOver(e, item)}
-                  onDrop={(e) => {
-                    if (isValidDraggedWidgetPlacement()) {
-                      handleInteractiveDrop(e, item.id);
-                    }
-                    setHoveredCell(null);
-                  }}
-                  onDragLeave={() => setHoveredCell(null)}
-                  onMouseEnter={(e) => {
-                    // if (item.isPlaceholder) {
-                      // e.currentTarget.style.backgroundColor = '#e3f2fd';
-                      // e.currentTarget.style.border = '2px dashed #2196f3';
-                      // e.currentTarget.style.opacity = '0';
-                    // }
-                  }}
-                  onMouseLeave={(e) => {
-                    // if (item.isPlaceholder) {
-                      // e.currentTarget.style.backgroundColor = '#ffffff';
-                      // e.currentTarget.style.border = 'none';
-                      // e.currentTarget.style.opacity = '1';
-                    // }
-                  }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    // backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
-                    // border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxSizing: 'border-box',
-                    cursor: item.isPlaceholder ? 'default' : 'default',
-                    userSelect: 'none',
-                    gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
-                    gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
-                    minHeight: item.isPlaceholder ? '20px' : 'auto',
-                    transition: 'all 0.2s ease',
-
-                    ...(item.isPlaceholder && isDragging && !highlight && {
-                      border: '2px dashed #ddd',
-                      // backgroundColor: '#e3f2fd',
-                    }),
-                    ...(item.isPlaceholder && isDragging && highlight && {
-                      border: '2px dashed #2196f3',
-                      // backgroundColor: '#e3f2fd',
-                    }),
-
-                    ...(!item.isPlaceholder && {
-                      backgroundColor: '#ffffff',
-                      border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
-                    }),
-
-                  }}
-                >
-                  {showHeaders && !item.isPlaceholder && (
-                    <div style={{
-                      height: '48px',
-                      backgroundColor: '#f8f9fa',
-                      borderBottom: '1px solid #e9ecef',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '0px 8px 0 4px',
-                      cursor: 'default',
-                      userSelect: 'none',
-                      fontWeight: 'bold'
-                    }}>
-                      {draggable && (
-                        <span
-                          draggable={true}
-                          onDragStart={(e) => {
-                            handleInteractiveDragStart(e, item.id);
-                            // Set custom drag image to show the entire widget
-                            const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
-                            if (widgetElement) {
-                              e.dataTransfer.setDragImage(widgetElement, 20, 20);
-                            }
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '32px',
-                            height: '32px',
-                            padding: '0px',
-                            cursor: 'grab',
-                            borderRadius: '50%',
-                            transition: 'background-color 0.2s ease',
-                            userSelect: 'none'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e3f2fd';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                          }}
-                          onMouseDown={(e) => {
-                            e.currentTarget.style.cursor = 'grabbing';
-                          }}
-                          onMouseUp={(e) => {
-                            e.currentTarget.style.cursor = 'grab';
-                          }}
-                        >
-                          ⋮⋮
-                        </span>
-                      )}
-                      <span>{item.header}</span>
-                    </div>
-                  )}
-                  {!item.isPlaceholder && (
-                    <div style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '8px',
-                      textAlign: 'center',
-                      color: '#333'
-                    }}>
-                      {item.content}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
       <footer className="app-footer">
         <p>Built with React + TypeScript + Vite</p>
