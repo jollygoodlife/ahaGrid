@@ -659,7 +659,7 @@ const App: React.FC = () => {
       console.log('Grid validation passed - no overlaps detected');
     }
   };
-
+  const isDragging = !!draggedWidget;
   return (
     <div className="app">
       <header className="app-header">
@@ -881,7 +881,8 @@ const App: React.FC = () => {
             gridAutoRows: `${gridHeight}px`,
             gap: showGridLines ? '1px' : '0px',
             padding: showGridLines ? '1px' : '0px',
-            backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
+            // backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
+            backgroundColor: 'transparent',
             width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
             maxWidth: '100%'
           }}>
@@ -911,24 +912,24 @@ const App: React.FC = () => {
                   }}
                   onDragLeave={() => setHoveredCell(null)}
                   onMouseEnter={(e) => {
-                    if (item.isPlaceholder) {
-                      e.currentTarget.style.backgroundColor = '#e3f2fd';
-                      e.currentTarget.style.border = '2px dashed #2196f3';
-                      e.currentTarget.style.opacity = '0.8';
-                    }
+                    // if (item.isPlaceholder) {
+                      // e.currentTarget.style.backgroundColor = '#e3f2fd';
+                      // e.currentTarget.style.border = '2px dashed #2196f3';
+                      // e.currentTarget.style.opacity = '0';
+                    // }
                   }}
                   onMouseLeave={(e) => {
-                    if (item.isPlaceholder) {
-                      e.currentTarget.style.backgroundColor = '#f8f9fa';
-                      e.currentTarget.style.border = '2px dashed #ddd';
-                      e.currentTarget.style.opacity = '0.6';
-                    }
+                    // if (item.isPlaceholder) {
+                      // e.currentTarget.style.backgroundColor = '#ffffff';
+                      // e.currentTarget.style.border = 'none';
+                      // e.currentTarget.style.opacity = '0';
+                    // }
                   }}
                   style={{
                     width: '100%',
                     height: '100%',
-                    backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
-                    border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
+                    // backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
+                    // border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
                     display: 'flex',
                     flexDirection: 'column',
                     boxSizing: 'border-box',
@@ -938,11 +939,21 @@ const App: React.FC = () => {
                     gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
                     minHeight: item.isPlaceholder ? '20px' : 'auto',
                     transition: 'all 0.2s ease',
-                    ...(item.isPlaceholder && !highlight && {
+
+                    ...(item.isPlaceholder && isDragging && !highlight && {
                       border: '2px dashed #ddd',
-                      backgroundColor: '#f8f9fa',
-                      opacity: 0.6
-                    })
+                      // backgroundColor: '#e3f2fd',
+                    }),
+                    ...(item.isPlaceholder && isDragging && highlight && {
+                      border: '2px dashed #2196f3',
+                      backgroundColor: '#e3f2fd',
+                    }),
+
+                    ...(!item.isPlaceholder && {
+                      backgroundColor: '#ffffff',
+                      border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
+                    }),
+
                   }}
                 >
                   {showHeaders && !item.isPlaceholder && (
