@@ -59,6 +59,9 @@ const App: React.FC = () => {
     draggedOverItemId: null as string | number | null,
   });
 
+  const [draggedWidget, setDraggedWidget] = useState<GridItemType | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<{col: number, row: number} | null>(null);
+
   const defaultWidgets = [
     {
       id: 1,
@@ -397,16 +400,41 @@ const App: React.FC = () => {
   const handleInteractiveDragStart = (e: React.DragEvent, itemId: string | number) => {
     console.log('Interactive drag start for item:', itemId);
     e.dataTransfer.setData('text/plain', itemId.toString());
+    const widget = positionedItems.find(item => item.id === itemId);
+    setDraggedWidget(widget || null);
   };
 
   const handleInteractiveDragEnd = (e: React.DragEvent) => {
     console.log('Interactive drag end');
+    setDraggedWidget(null);
+    setHoveredCell(null);
   };
 
-  const handleInteractiveDragOver = (e: React.DragEvent) => {
+  const handleInteractiveDragOver = (e: React.DragEvent, item: GridItemType) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    if (item.gridCol !== undefined && item.gridRow !== undefined) {
+      setHoveredCell({col: item.gridCol, row: item.gridRow});
+    }
   };
+
+  // Helper to check if a cell is within the area the dragged widget would occupy
+  function isCellInDraggedArea(cellCol: number, cellRow: number) {
+    if (!draggedWidget || !hoveredCell) return false;
+    const { colSize = 1, rowSize = 1 } = draggedWidget;
+    return (
+      cellCol >= hoveredCell.col &&
+      cellCol < hoveredCell.col + colSize &&
+      cellRow >= hoveredCell.row &&
+      cellRow < hoveredCell.row + rowSize
+    );
+  }
+
+  // Helper to check if the dragged widget can fit at the hovered cell
+  function isValidDraggedWidgetPlacement() {
+    if (!draggedWidget || !hoveredCell) return false;
+    return canWidgetFitAtPosition(draggedWidget, hoveredCell.col, hoveredCell.row);
+  }
 
   const handleInteractiveDrop = (e: React.DragEvent, targetItemId: string | number) => {
     e.preventDefault();
@@ -533,34 +561,50 @@ const App: React.FC = () => {
   const canWidgetFitAtPosition = (widget: GridItemType, targetCol: number, targetRow: number): boolean => {
     // Check if the widget would fit within grid bounds
     if (targetCol + widget.colSize > gridColumns || targetRow + widget.rowSize > gridRows) {
-      console.log('Widget would exceed grid bounds:', widget.header, 'at', targetCol, targetRow);
       return false;
     }
 
-    // Check if the space is occupied by other widgets
-    // for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
-    //   for (let col = targetCol; col < targetCol + widget.colSize; col++) {
-    //     const existingItem = positionedItems.find(item =>
-    //       item.gridCol !== undefined &&
-    //       item.gridRow !== undefined &&
-    //       item.id !== widget.id && // Don't check against the widget itself
-    //       col >= item.gridCol &&
-    //       col < item.gridCol + item.colSize &&
-    //       row >= item.gridRow &&
-    //       row < item.gridRow + item.rowSize
-    //     );
+    let overlappingWidget: GridItemType | null = null;
 
-    //     if (existingItem) {
-    //       console.log('Collision detected:', widget.header, 'would overlap with', existingItem.header, 'at position', col, row);
-    //       console.log('Widget dimensions:', widget.colSize, 'x', widget.rowSize, 'at', targetCol, targetRow);
-    //       console.log('Existing widget dimensions:', existingItem.colSize, 'x', existingItem.rowSize, 'at', existingItem.gridCol, existingItem.gridRow);
-    //       return false; // Space is occupied
-    //     }
-    //   }
-    // }
+    for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
+      for (let col = targetCol; col < targetCol + widget.colSize; col++) {
+        const existingItem = positionedItems.find(item =>
+          !item.isPlaceholder &&
+          item.gridCol !== undefined &&
+          item.gridRow !== undefined &&
+          item.id !== widget.id &&
+          col >= item.gridCol &&
+          col < item.gridCol + item.colSize &&
+          row >= item.gridRow &&
+          row < item.gridRow + item.rowSize
+        );
+        if (existingItem) {
+          // If we haven't found an overlapping widget yet, set it
+          if (!overlappingWidget) {
+            overlappingWidget = existingItem;
+          }
+          // If more than one unique overlapping widget, not allowed
+          if (overlappingWidget.id !== existingItem.id) {
+            return false;
+          }
+        }
+      }
+    }
 
-    console.log('Widget can fit at position:', widget.header, 'at', targetCol, targetRow);
-    return true; // Widget can fit here
+    // If there is an overlapping widget, allow only if it is the same size as the dragged widget
+    if (overlappingWidget) {
+      if (
+        (overlappingWidget.colSize || 1) === (widget.colSize || 1) &&
+        (overlappingWidget.rowSize || 1) === (widget.rowSize || 1)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    // No overlap, allowed
+    return true;
   };
 
   // Function to find the best available position for a widget
@@ -841,119 +885,137 @@ const App: React.FC = () => {
             width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
             maxWidth: '100%'
           }}>
-            {allGridItems.map((item) => (
-              <div
-                key={item.id}
-                data-widget-id={item.id}
-                onDragEnd={handleInteractiveDragEnd}
-                onDragOver={handleInteractiveDragOver}
-                onDrop={(e) => handleInteractiveDrop(e, item.id)}
-                onMouseEnter={(e) => {
-                  if (item.isPlaceholder) {
-                    e.currentTarget.style.backgroundColor = '#e3f2fd';
-                    e.currentTarget.style.border = '2px dashed #2196f3';
-                    e.currentTarget.style.opacity = '0.8';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (item.isPlaceholder) {
-                    e.currentTarget.style.backgroundColor = '#f8f9fa';
-                    e.currentTarget.style.border = '2px dashed #ddd';
-                    e.currentTarget.style.opacity = '0.6';
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: item.isPlaceholder ? 'transparent' : '#ffffff',
-                  border: showGridLines ? '1px solid #ccc' : 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  boxSizing: 'border-box',
-                  cursor: item.isPlaceholder ? 'default' : 'default',
-                  userSelect: 'none',
-                  gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
-                  gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
-                  minHeight: item.isPlaceholder ? '20px' : 'auto',
-                  transition: 'all 0.2s ease',
-                  ...(item.isPlaceholder && {
-                    border: '2px dashed #ddd',
-                    backgroundColor: '#f8f9fa',
-                    opacity: 0.6
-                  })
-                }}
-              >
-                {showHeaders && !item.isPlaceholder && (
-                  <div style={{
-                    height: '48px',
-                    backgroundColor: '#f8f9fa',
-                    borderBottom: '1px solid #e9ecef',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '0px 8px 0 4px',
-                    cursor: 'default',
-                    userSelect: 'none',
-                    fontWeight: 'bold'
-                  }}>
+            {allGridItems.map((item) => {
+              // Highlight logic for all cells the dragged widget would occupy
+              let highlight = false;
+              if (
+                draggedWidget &&
+                hoveredCell &&
+                isCellInDraggedArea(item.gridCol ?? -1, item.gridRow ?? -1) &&
+                isValidDraggedWidgetPlacement()
+              ) {
+                highlight = true;
+              }
 
-                    {draggable && (
-                      <span
-                        draggable={true}
-                        onDragStart={(e) => {
-                          handleInteractiveDragStart(e, item.id);
-                          // Set custom drag image to show the entire widget
-                          const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
-                          if (widgetElement) {
-                            e.dataTransfer.setDragImage(widgetElement, 20, 20);
-                          }
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',    // vertical center
-                          justifyContent: 'center',// horizontal center
-                          width: '32px',
-                          height: '32px',
-                          padding: '0px',
-                          cursor: 'grab',
-                          borderRadius: '50%', // More round
-                          transition: 'background-color 0.2s ease',
-                          userSelect: 'none'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#ccccff';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        onMouseDown={(e) => {
-                          e.currentTarget.style.cursor = 'grabbing';
-                        }}
-                        onMouseUp={(e) => {
-                          e.currentTarget.style.cursor = 'grab';
-                        }}
-                      >
-                        ⋮⋮
-                      </span>
-                    )}
-                    <span>{item.header}</span>
-                  </div>
-                )}
-                {!item.isPlaceholder && (
-                  <div style={{
-                    flex: 1,
+              return (
+                <div
+                  key={item.id}
+                  data-widget-id={item.id}
+                  onDragEnd={handleInteractiveDragEnd}
+                  onDragOver={(e) => handleInteractiveDragOver(e, item)}
+                  onDrop={(e) => {
+                    if (isValidDraggedWidgetPlacement()) {
+                      handleInteractiveDrop(e, item.id);
+                    }
+                    setHoveredCell(null);
+                  }}
+                  onDragLeave={() => setHoveredCell(null)}
+                  onMouseEnter={(e) => {
+                    if (item.isPlaceholder) {
+                      e.currentTarget.style.backgroundColor = '#e3f2fd';
+                      e.currentTarget.style.border = '2px dashed #2196f3';
+                      e.currentTarget.style.opacity = '0.8';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (item.isPlaceholder) {
+                      e.currentTarget.style.backgroundColor = '#f8f9fa';
+                      e.currentTarget.style.border = '2px dashed #ddd';
+                      e.currentTarget.style.opacity = '0.6';
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
+                    border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '8px',
-                    textAlign: 'center',
-                    color: '#333'
-                  }}>
-                    {item.content}
-                  </div>
-                )}
-              </div>
-            ))}
+                    flexDirection: 'column',
+                    boxSizing: 'border-box',
+                    cursor: item.isPlaceholder ? 'default' : 'default',
+                    userSelect: 'none',
+                    gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
+                    gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
+                    minHeight: item.isPlaceholder ? '20px' : 'auto',
+                    transition: 'all 0.2s ease',
+                    ...(item.isPlaceholder && !highlight && {
+                      border: '2px dashed #ddd',
+                      backgroundColor: '#f8f9fa',
+                      opacity: 0.6
+                    })
+                  }}
+                >
+                  {showHeaders && !item.isPlaceholder && (
+                    <div style={{
+                      height: '48px',
+                      backgroundColor: '#f8f9fa',
+                      borderBottom: '1px solid #e9ecef',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '0px 8px 0 4px',
+                      cursor: 'default',
+                      userSelect: 'none',
+                      fontWeight: 'bold'
+                    }}>
+                      {draggable && (
+                        <span
+                          draggable={true}
+                          onDragStart={(e) => {
+                            handleInteractiveDragStart(e, item.id);
+                            // Set custom drag image to show the entire widget
+                            const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
+                            if (widgetElement) {
+                              e.dataTransfer.setDragImage(widgetElement, 20, 20);
+                            }
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '32px',
+                            height: '32px',
+                            padding: '0px',
+                            cursor: 'grab',
+                            borderRadius: '50%',
+                            transition: 'background-color 0.2s ease',
+                            userSelect: 'none'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ccccff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                          onMouseDown={(e) => {
+                            e.currentTarget.style.cursor = 'grabbing';
+                          }}
+                          onMouseUp={(e) => {
+                            e.currentTarget.style.cursor = 'grab';
+                          }}
+                        >
+                          ⋮⋮
+                        </span>
+                      )}
+                      <span>{item.header}</span>
+                    </div>
+                  )}
+                  {!item.isPlaceholder && (
+                    <div style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '8px',
+                      textAlign: 'center',
+                      color: '#333'
+                    }}>
+                      {item.content}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
