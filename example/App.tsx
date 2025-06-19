@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GridContainer, GridItem } from '../src';
-import { DebugInfo } from './DebugInfo';
-import { DragDebugTest } from './DragDebugTest';
 import './App.css';
 
 // Type definition for grid items
@@ -61,6 +59,99 @@ const App: React.FC = () => {
     draggedOverItemId: null as string | number | null,
   });
 
+  const defaultWidgets = [
+    {
+      id: 1,
+      header: '🚀 Rocket Widget',
+      content: 'Ready for launch!',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 0,
+      gridRow: 0
+    },
+    {
+      id: 2,
+      header: '🌟 Star Widget',
+      content: 'Shining bright',
+      colSize: 2,
+      rowSize: 1,
+      gridCol: 1,
+      gridRow: 0
+    },
+    {
+      id: 3,
+      header: '🎨 Art Widget',
+      content: 'Creative expression',
+      colSize: 1,
+      rowSize: 2,
+      gridCol: 3,
+      gridRow: 0
+    },
+    {
+      id: 4,
+      header: '💻 Code Widget',
+      content: 'Building the future',
+      colSize: 1,
+      rowSize: 2,
+      gridCol: 0,
+      gridRow: 1
+    },
+    {
+      id: 5,
+      header: '🎵 Music Widget',
+      content: 'Harmony in motion',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 4,
+      gridRow: 0
+    },
+    {
+      id: 6,
+      header: '🌍 World Widget',
+      content: 'Connected globally',
+      colSize: 2,
+      rowSize: 2,
+      gridCol: 0,
+      gridRow: 3
+    },
+    {
+      id: 7,
+      header: '⚡ Energy Widget',
+      content: 'Powerful and fast',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 5,
+      gridRow: 0
+    },
+    {
+      id: 8,
+      header: '🎯 Target Widget',
+      content: 'Precision focused',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 2,
+      gridRow: 1
+    },
+    {
+      id: 9,
+      header: '🌈 Rainbow Widget',
+      content: 'Colorful diversity',
+      colSize: 2,
+      rowSize: 1,
+      gridCol: 4,
+      gridRow: 2
+    },
+    {
+      id: 10,
+      header: '🔮 Magic Widget',
+      content: 'Mysterious wonders',
+      colSize: 1,
+      rowSize: 1,
+      gridCol: 5,
+      gridRow: 1
+    },
+  ];
+
   // Load widget positions from localStorage or use defaults
   const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>(() => {
     const saved = localStorage.getItem('windowgrid_widgets');
@@ -71,100 +162,7 @@ const App: React.FC = () => {
         console.error('Failed to parse saved widgets:', error);
       }
     }
-    
-    // Default widget positions
-    return [
-      {
-        id: 1,
-        header: '🚀 Rocket Widget',
-        content: 'Ready for launch!',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 0,
-        gridRow: 0
-      },
-      {
-        id: 2,
-        header: '🌟 Star Widget',
-        content: 'Shining bright',
-        colSize: 2,
-        rowSize: 1,
-        gridCol: 1,
-        gridRow: 0
-      },
-      {
-        id: 3,
-        header: '🎨 Art Widget',
-        content: 'Creative expression',
-        colSize: 1,
-        rowSize: 2,
-        gridCol: 3,
-        gridRow: 0
-      },
-      {
-        id: 4,
-        header: '💻 Code Widget',
-        content: 'Building the future',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 0,
-        gridRow: 1
-      },
-      {
-        id: 5,
-        header: '🎵 Music Widget',
-        content: 'Harmony in motion',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 4,
-        gridRow: 0
-      },
-      {
-        id: 6,
-        header: '🌍 World Widget',
-        content: 'Connected globally',
-        colSize: 2,
-        rowSize: 2,
-        gridCol: 0,
-        gridRow: 2
-      },
-      {
-        id: 7,
-        header: '⚡ Energy Widget',
-        content: 'Powerful and fast',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 5,
-        gridRow: 0
-      },
-      {
-        id: 8,
-        header: '🎯 Target Widget',
-        content: 'Precision focused',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 2,
-        gridRow: 1
-      },
-      {
-        id: 9,
-        header: '🌈 Rainbow Widget',
-        content: 'Colorful diversity',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 4,
-        gridRow: 2
-      },
-      {
-        id: 10,
-        header: '🔮 Magic Widget',
-        content: 'Mysterious wonders',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 5,
-        gridRow: 1
-      },
-    ];
+    return defaultWidgets;
   });
 
   // Wrapper functions to save state to localStorage
@@ -230,100 +228,6 @@ const App: React.FC = () => {
     setDraggable(true);
     setReorderCount(0);
     setInvalidDropMessage(null);
-    
-    // Reset widgets to default positions
-    const defaultWidgets = [
-      {
-        id: 1,
-        header: '🚀 Rocket Widget',
-        content: 'Ready for launch!',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 0,
-        gridRow: 0
-      },
-      {
-        id: 2,
-        header: '🌟 Star Widget',
-        content: 'Shining bright',
-        colSize: 2,
-        rowSize: 1,
-        gridCol: 1,
-        gridRow: 0
-      },
-      {
-        id: 3,
-        header: '🎨 Art Widget',
-        content: 'Creative expression',
-        colSize: 1,
-        rowSize: 2,
-        gridCol: 3,
-        gridRow: 0
-      },
-      {
-        id: 4,
-        header: '💻 Code Widget',
-        content: 'Building the future',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 0,
-        gridRow: 1
-      },
-      {
-        id: 5,
-        header: '🎵 Music Widget',
-        content: 'Harmony in motion',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 4,
-        gridRow: 0
-      },
-      {
-        id: 6,
-        header: '🌍 World Widget',
-        content: 'Connected globally',
-        colSize: 2,
-        rowSize: 2,
-        gridCol: 0,
-        gridRow: 2
-      },
-      {
-        id: 7,
-        header: '⚡ Energy Widget',
-        content: 'Powerful and fast',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 5,
-        gridRow: 0
-      },
-      {
-        id: 8,
-        header: '🎯 Target Widget',
-        content: 'Precision focused',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 2,
-        gridRow: 1
-      },
-      {
-        id: 9,
-        header: '🌈 Rainbow Widget',
-        content: 'Colorful diversity',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 4,
-        gridRow: 2
-      },
-      {
-        id: 10,
-        header: '🔮 Magic Widget',
-        content: 'Mysterious wonders',
-        colSize: 1,
-        rowSize: 1,
-        gridCol: 5,
-        gridRow: 1
-      },
-    ];
     setInteractiveItems(defaultWidgets);
   };
 
@@ -541,29 +445,44 @@ const App: React.FC = () => {
             // setTimeout(() => setInvalidDropMessage(null), 3000);
           }
         } else if (!targetItem.isPlaceholder) {
-          // If dropping on another widget, check if they can swap positions
+          // If dropping on another widget, allow swap if both have the same size
           const targetRealItem = positionedItems.find(item => item.id === targetItemId);
           if (targetRealItem && targetRealItem.gridCol !== undefined && targetRealItem.gridRow !== undefined) {
-            const draggedCanFitAtTarget = canWidgetFitAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
-            const targetCanFitAtDragged = canWidgetFitAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
+            const sameSize =
+              (draggedItem.colSize || 1) === (targetRealItem.colSize || 1) &&
+              (draggedItem.rowSize || 1) === (targetRealItem.rowSize || 1);
 
-            if (draggedCanFitAtTarget && targetCanFitAtDragged) {
-              // Both widgets can fit in each other's positions, so swap them
-              const newItems = placeWidgetAtPosition(draggedItem, targetRealItem.gridCol, targetRealItem.gridRow);
-              const updatedItems = placeWidgetAtPosition(targetRealItem, draggedItem.gridCol || 0, draggedItem.gridRow || 0);
-              console.log('Swapping widget positions:', draggedItem.header, 'and', targetRealItem.header);
-              setInteractiveItemsAndSave(updatedItems);
+            if (sameSize) {
+              // Swap their positions
+              const newItems = [...interactiveItems];
+              const draggedIndex = newItems.findIndex(item => item.id === draggedItem.id);
+              const targetIndex = newItems.findIndex(item => item.id === targetRealItem.id);
+
+              // Swap grid positions
+              const draggedGridCol = draggedItem.gridCol;
+              const draggedGridRow = draggedItem.gridRow;
+
+              newItems[draggedIndex] = {
+                ...draggedItem,
+                gridCol: targetRealItem.gridCol,
+                gridRow: targetRealItem.gridRow,
+              };
+
+              newItems[targetIndex] = {
+                ...targetRealItem,
+                gridCol: draggedGridCol,
+                gridRow: draggedGridRow,
+              };
+
+              setInteractiveItemsAndSave(newItems);
               setReorderCount(prev => prev + 1);
 
-              // Validate the new grid state
               setTimeout(() => {
-                validateGridState(updatedItems);
+                validateGridState(newItems);
               }, 100);
             } else {
-              console.log('Widgets cannot swap positions due to size constraints');
-              // Show feedback that the swap is not allowed
               setInvalidDropMessage(`Cannot swap ${draggedItem.header} and ${targetRealItem.header} - size mismatch`);
-              setTimeout(() => setInvalidDropMessage(null), 3000);
+              // setTimeout(() => setInvalidDropMessage(null), 3000);
             }
           }
         }
@@ -619,26 +538,26 @@ const App: React.FC = () => {
     }
 
     // Check if the space is occupied by other widgets
-    for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
-      for (let col = targetCol; col < targetCol + widget.colSize; col++) {
-        const existingItem = positionedItems.find(item =>
-          item.gridCol !== undefined &&
-          item.gridRow !== undefined &&
-          item.id !== widget.id && // Don't check against the widget itself
-          col >= item.gridCol &&
-          col < item.gridCol + item.colSize &&
-          row >= item.gridRow &&
-          row < item.gridRow + item.rowSize
-        );
+    // for (let row = targetRow; row < targetRow + widget.rowSize; row++) {
+    //   for (let col = targetCol; col < targetCol + widget.colSize; col++) {
+    //     const existingItem = positionedItems.find(item =>
+    //       item.gridCol !== undefined &&
+    //       item.gridRow !== undefined &&
+    //       item.id !== widget.id && // Don't check against the widget itself
+    //       col >= item.gridCol &&
+    //       col < item.gridCol + item.colSize &&
+    //       row >= item.gridRow &&
+    //       row < item.gridRow + item.rowSize
+    //     );
 
-        if (existingItem) {
-          console.log('Collision detected:', widget.header, 'would overlap with', existingItem.header, 'at position', col, row);
-          console.log('Widget dimensions:', widget.colSize, 'x', widget.rowSize, 'at', targetCol, targetRow);
-          console.log('Existing widget dimensions:', existingItem.colSize, 'x', existingItem.rowSize, 'at', existingItem.gridCol, existingItem.gridRow);
-          return false; // Space is occupied
-        }
-      }
-    }
+    //     if (existingItem) {
+    //       console.log('Collision detected:', widget.header, 'would overlap with', existingItem.header, 'at position', col, row);
+    //       console.log('Widget dimensions:', widget.colSize, 'x', widget.rowSize, 'at', targetCol, targetRow);
+    //       console.log('Existing widget dimensions:', existingItem.colSize, 'x', existingItem.rowSize, 'at', existingItem.gridCol, existingItem.gridRow);
+    //       return false; // Space is occupied
+    //     }
+    //   }
+    // }
 
     console.log('Widget can fit at position:', widget.header, 'at', targetCol, targetRow);
     return true; // Widget can fit here
@@ -987,26 +906,6 @@ const App: React.FC = () => {
                           const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
                           if (widgetElement) {
                             e.dataTransfer.setDragImage(widgetElement, 20, 20);
-
-                            // Create a clone of the widget for the drag preview
-                            // const clone = widgetElement.cloneNode(true) as HTMLElement;
-                            // clone.style.position = 'absolute';
-                            // clone.style.top = '-1000px';
-                            // clone.style.left = '-1000px';
-                            // clone.style.opacity = '0.8';
-                            // clone.style.transform = 'rotate(5deg)';
-                            // clone.style.pointerEvents = 'none';
-                            // clone.style.zIndex = '10000';
-                            // document.body.appendChild(clone);
-
-                            // e.dataTransfer.setDragImage(clone, 20, 20);
-
-                            // // Remove the clone after a short delay
-                            // setTimeout(() => {
-                            //   if (document.body.contains(clone)) {
-                            //     document.body.removeChild(clone);
-                            //   }
-                            // }, 100);
                           }
                         }}
                         style={{
@@ -1058,7 +957,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-
       <div className="demo-section">
         <h2>Instructions</h2>
         <div className="instructions">

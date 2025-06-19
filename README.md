@@ -11,6 +11,81 @@ A flexible and responsive grid container library for React applications with dra
 - ⚡ **Performance Optimized**: Built with React hooks and memoization
 - 🔧 **TypeScript Support**: Full TypeScript definitions included
 - 🎭 **Interactive Demo**: Live example with real-time controls
+- **Draggable Widgets**: Drag and drop widgets to rearrange them
+- **Widget Swapping**: Swap positions between widgets of the same size
+- **Grid Positioning**: Support for explicit grid positioning with `gridCol` and `gridRow`
+- **Flexible Sizing**: Widgets can have different sizes (`colSize` and `rowSize`)
+- **Visual Feedback**: Visual indicators during drag operations
+
+## Widget Swapping
+
+The library now supports widget swapping when both widgets have the same dimensions. This feature allows you to:
+
+- Swap positions between widgets that have identical `colSize` and `rowSize` values
+- Maintain grid integrity by preventing swaps between differently-sized widgets
+- Get visual feedback when swaps are not possible
+
+### How Widget Swapping Works
+
+1. **Size Matching**: Widgets can only swap if they have the same `colSize` and `rowSize`
+2. **Position Validation**: The system checks if both widgets can fit in each other's positions
+3. **Collision Detection**: Prevents swaps that would cause overlaps with other widgets
+4. **Grid Bounds**: Ensures widgets stay within the defined grid boundaries
+
+### Example
+
+```tsx
+import { GridContainer, GridItem } from 'windowgrid';
+
+const items: GridItem[] = [
+  {
+    id: 1,
+    header: 'Widget A',
+    content: 'Content A',
+    colSize: 1,
+    rowSize: 1,
+    gridCol: 0,
+    gridRow: 0,
+  },
+  {
+    id: 2,
+    header: 'Widget B',
+    content: 'Content B',
+    colSize: 1,
+    rowSize: 1,
+    gridCol: 1,
+    gridRow: 0,
+  },
+  {
+    id: 3,
+    header: 'Large Widget',
+    content: 'Large Content',
+    colSize: 2,
+    rowSize: 2,
+    gridCol: 0,
+    gridRow: 1,
+  },
+];
+
+function App() {
+  return (
+    <GridContainer
+      width={150}
+      height={100}
+      items={items}
+      gridColumns={6}
+      gridRows={6}
+      draggable={true}
+      onItemsReorder={(newItems) => console.log('Items reordered:', newItems)}
+    />
+  );
+}
+```
+
+In this example:
+- Widget A and Widget B can swap positions (both are 1x1)
+- Large Widget cannot swap with the smaller widgets (different sizes)
+- The system automatically handles the swap logic when you drag one widget onto another
 
 ## Installation
 
@@ -79,6 +154,11 @@ interface GridItem {
   header?: ReactNode;         // Optional header content
   x?: number;                 // Optional x position (future feature)
   y?: number;                 // Optional y position (future feature)
+  colSize?: number;           // Optional column size
+  rowSize?: number;           // Optional row size
+  gridCol?: number;           // Optional grid column position
+  gridRow?: number;           // Optional grid row position
+  isPlaceholder?: boolean;    // Whether this is a placeholder item
 }
 ```
 
