@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GridContainer, GridItem } from '../src';
 import './App.css';
 
 // Type definition for grid items
@@ -922,7 +921,7 @@ const App: React.FC = () => {
                     // if (item.isPlaceholder) {
                       // e.currentTarget.style.backgroundColor = '#ffffff';
                       // e.currentTarget.style.border = 'none';
-                      // e.currentTarget.style.opacity = '0';
+                      // e.currentTarget.style.opacity = '1';
                     // }
                   }}
                   style={{
@@ -946,7 +945,7 @@ const App: React.FC = () => {
                     }),
                     ...(item.isPlaceholder && isDragging && highlight && {
                       border: '2px dashed #2196f3',
-                      backgroundColor: '#e3f2fd',
+                      // backgroundColor: '#e3f2fd',
                     }),
 
                     ...(!item.isPlaceholder && {
@@ -993,7 +992,7 @@ const App: React.FC = () => {
                             userSelect: 'none'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ccccff';
+                            e.currentTarget.style.backgroundColor = '#e3f2fd';
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.backgroundColor = 'transparent';
@@ -1030,21 +1029,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="demo-section">
-        <h2>Instructions</h2>
-        <div className="instructions">
-          <ul>
-            <li><strong>Debug Test:</strong> Try the blue "Drag Me" div first to test basic drag functionality</li>
-            <li><strong>Interactive Grid:</strong> Drag the ⋮⋮ handle in widget headers to rearrange widgets (simple implementation)</li>
-            <li><strong>GridContainer:</strong> The component-based implementation for reference</li>
-            <li><strong>Visual Feedback:</strong> Widgets show visual feedback during drag operations</li>
-            <li><strong>Toggle Features:</strong> Use the controls above to enable/disable headers and dragging</li>
-            <li><strong>Responsive:</strong> Grid automatically adjusts to different sizes</li>
-            <li><strong>Debug Info:</strong> Check the debug panel in the top-right corner for drag state</li>
-          </ul>
-        </div>
-      </div>
-
       <footer className="app-footer">
         <p>Built with React + TypeScript + Vite</p>
       </footer>

@@ -148,7 +148,7 @@
   padding: 20px 0;
 }
 
-.demo-grid {
+/* .demo-grid {
   max-width: 100%;
   overflow: hidden;
 }
@@ -169,7 +169,7 @@
   font-size: 0.9em;
   color: #666;
   line-height: 1.4;
-}
+} */
 
 .instructions {
   background: #f8f9fa;
