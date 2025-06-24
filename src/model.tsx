@@ -50,8 +50,8 @@ export const defaultWidgets = [
         content: 'Connected globally',
         colSize: 2,
         rowSize: 2,
-        gridCol: 0,
-        gridRow: 3
+        gridCol: 1,
+        gridRow: 1
     },
     {
         id: 7,
@@ -68,8 +68,8 @@ export const defaultWidgets = [
         content: 'Precision focused',
         colSize: 1,
         rowSize: 1,
-        gridCol: 2,
-        gridRow: 1
+        gridCol: 3,
+        gridRow: 2
     },
     {
         id: 9,
@@ -89,6 +89,15 @@ export const defaultWidgets = [
         gridCol: 5,
         gridRow: 1
     },
+    {
+        id: 11,
+        header: '🔮 Apple Widget',
+        content: 'Mysterious wonders',
+        colSize: 1,
+        rowSize: 1,
+        gridCol: 4,
+        gridRow: 1
+    }
 ];
 
 
