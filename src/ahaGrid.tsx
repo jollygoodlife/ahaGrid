@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { defaultWidgets, recalculateGridLayout } from './model';
 import './ahaGrid.css';
 
 // Type definition for grid items
@@ -70,99 +71,6 @@ const AhaGrid: React.FC = () => {
   const [draggedWidget, setDraggedWidget] = useState<GridItemType | null>(null);
   const [hoveredCell, setHoveredCell] = useState<{ col: number, row: number } | null>(null);
 
-  const defaultWidgets = [
-    {
-      id: 1,
-      header: '🚀 Rocket Widget',
-      content: 'Ready for launch!',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 0,
-      gridRow: 0
-    },
-    {
-      id: 2,
-      header: '🌟 Star Widget',
-      content: 'Shining bright',
-      colSize: 2,
-      rowSize: 1,
-      gridCol: 1,
-      gridRow: 0
-    },
-    {
-      id: 3,
-      header: '🎨 Art Widget',
-      content: 'Creative expression',
-      colSize: 1,
-      rowSize: 2,
-      gridCol: 3,
-      gridRow: 0
-    },
-    {
-      id: 4,
-      header: '💻 Code Widget',
-      content: 'Building the future',
-      colSize: 1,
-      rowSize: 2,
-      gridCol: 0,
-      gridRow: 1
-    },
-    {
-      id: 5,
-      header: '🎵 Music Widget',
-      content: 'Harmony in motion',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 4,
-      gridRow: 0
-    },
-    {
-      id: 6,
-      header: '🌍 World Widget',
-      content: 'Connected globally',
-      colSize: 2,
-      rowSize: 2,
-      gridCol: 0,
-      gridRow: 3
-    },
-    {
-      id: 7,
-      header: '⚡ Energy Widget',
-      content: 'Powerful and fast',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 5,
-      gridRow: 0
-    },
-    {
-      id: 8,
-      header: '🎯 Target Widget',
-      content: 'Precision focused',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 2,
-      gridRow: 1
-    },
-    {
-      id: 9,
-      header: '🌈 Rainbow Widget',
-      content: 'Colorful diversity',
-      colSize: 2,
-      rowSize: 1,
-      gridCol: 4,
-      gridRow: 2
-    },
-    {
-      id: 10,
-      header: '🔮 Magic Widget',
-      content: 'Mysterious wonders',
-      colSize: 1,
-      rowSize: 1,
-      gridCol: 5,
-      gridRow: 1
-    },
-  ];
-
   // Load widget positions from localStorage or use defaults
   const [interactiveItems, setInteractiveItems] = useState<GridItemType[]>(() => {
     const saved = localStorage.getItem('ahagrid_widgets');
@@ -176,10 +84,16 @@ const AhaGrid: React.FC = () => {
     return defaultWidgets;
   });
 
+  const [containerWidth, setContainerWidth] = useState(window.innerWidth);
+  const gridRef = React.useRef<HTMLDivElement>(null);
+
+  // Add displayedItems state
+  const [displayedItems, setDisplayedItems] = useState<GridItemType[]>([]);
+
   // Wrapper functions to save state to localStorage
   const setGridWidthAndSave = (value: number) => {
-    setGridWidth(value);
-    localStorage.setItem('ahagrid_gridWidth', value.toString());
+      setGridWidth(value);
+      localStorage.setItem('ahagrid_gridWidth', value.toString());
   };
 
   const setGridHeightAndSave = (value: number) => {
@@ -244,15 +158,10 @@ const AhaGrid: React.FC = () => {
   // Function to generate placeholder items for empty grid spaces
   const generatePlaceholders = (items: GridItemType[]): GridItemType[] => {
     const placeholders: GridItemType[] = [];
-    let placeholderId = 1000; // Start placeholder IDs at 1000 to avoid conflicts
-
-    // Create a grid representation to find empty spaces
+    let placeholderId = 1000;
     const grid = Array(gridColumns).fill(null).map(() => Array(gridRows).fill(null));
-
-    // Place existing items in the grid at their actual positions
     items.forEach(item => {
       if (item.gridCol !== undefined && item.gridRow !== undefined) {
-        // Place the item at its actual position
         for (let r = item.gridRow; r < item.gridRow + item.rowSize; r++) {
           for (let c = item.gridCol; c < item.gridCol + item.colSize; c++) {
             if (r < gridRows && c < gridColumns) {
@@ -262,8 +171,6 @@ const AhaGrid: React.FC = () => {
         }
       }
     });
-
-    // Add placeholder items for empty spaces
     for (let row = 0; row < gridRows; row++) {
       for (let col = 0; col < gridColumns; col++) {
         if (grid[col][row] === null) {
@@ -281,8 +188,6 @@ const AhaGrid: React.FC = () => {
         }
       }
     }
-
-    console.log('Generated placeholders:', placeholders.length, 'for empty spaces');
     return placeholders;
   };
 
@@ -304,8 +209,8 @@ const AhaGrid: React.FC = () => {
     return newItems;
   };
 
-  // Combine real items with placeholders
-  const positionedItems = interactiveItems; // All widgets already have positions
+  // Use displayedItems for rendering and drag/drop
+  const positionedItems = displayedItems;
   const allGridItems = [...positionedItems, ...generatePlaceholders(positionedItems)];
 
   // Validate grid state to detect overlaps
@@ -315,6 +220,7 @@ const AhaGrid: React.FC = () => {
 
   // Interactive grid drag handlers (based on working debug test)
   const handleInteractiveDragStart = (e: React.DragEvent, itemId: string | number) => {
+    if (!isCanonical) return;
     console.log('Interactive drag start for item:', itemId);
     e.dataTransfer.setData('text/plain', itemId.toString());
     const widget = positionedItems.find(item => item.id === itemId);
@@ -322,12 +228,14 @@ const AhaGrid: React.FC = () => {
   };
 
   const handleInteractiveDragEnd = (_: React.DragEvent) => {
+    if (!isCanonical) return;
     console.log('Interactive drag end');
     setDraggedWidget(null);
     setHoveredCell(null);
   };
 
   const handleInteractiveDragOver = (e: React.DragEvent, item: GridItemType) => {
+    if (!isCanonical) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     if (item.gridCol !== undefined && item.gridRow !== undefined) {
@@ -354,6 +262,7 @@ const AhaGrid: React.FC = () => {
   }
 
   const handleInteractiveDrop = (e: React.DragEvent, targetItemId: string | number) => {
+    if (!isCanonical) return;
     e.preventDefault();
     const draggedItemId = e.dataTransfer.getData('text/plain');
     console.log('Interactive drop - dragged:', draggedItemId, 'target:', targetItemId);
@@ -522,6 +431,51 @@ const AhaGrid: React.FC = () => {
       console.log('Grid validation passed - no overlaps detected');
     }
   };
+
+  // Update containerWidth on window resize
+  useEffect(() => {
+    function handleResize() {
+      if (gridRef.current) {
+        setContainerWidth(gridRef.current.offsetWidth);
+      } else {
+        setContainerWidth(window.innerWidth);
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Define canonical layout values
+  const CANONICAL_COLUMNS = 6;
+  const CANONICAL_ROWS = 5;
+  const isCanonical =
+    gridColumns === CANONICAL_COLUMNS &&
+    gridRows === CANONICAL_ROWS &&
+    containerWidth >= gridColumns * gridWidth;
+
+  useEffect(() => {
+    console.log("isC " + isCanonical);
+    if (isCanonical) {
+      setDisplayedItems(interactiveItems);
+    } else {
+      const canonicalItems = interactiveItems.filter(
+        (item): item is Required<GridItemType> =>
+          typeof item.gridCol === 'number' &&
+          typeof item.gridRow === 'number' &&
+          typeof item.id === 'number' &&
+          typeof item.header === 'string' &&
+          typeof item.content === 'string' &&
+          typeof item.colSize === 'number' &&
+          typeof item.rowSize === 'number'
+      );
+      const { layout, columns } = recalculateGridLayout(gridWidth, containerWidth, CANONICAL_COLUMNS, canonicalItems);
+      setDisplayedItems(layout);
+      setGridColumns(columns);
+      console.log("columns" + columns)
+    }
+  }, [interactiveItems, gridWidth, gridColumns, gridRows, containerWidth]);
+
   const isDragging = !!draggedWidget;
   return (
     <div className="app">
@@ -544,17 +498,19 @@ const AhaGrid: React.FC = () => {
         </p>
 
         <div className="grid-demo">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${gridColumns}, ${gridWidth}px)`,
-            gridAutoRows: `${gridHeight}px`,
-            gap: showGridLines ? '1px' : '0px',
-            padding: showGridLines ? '1px' : '0px',
-            // backgroundColor: showGridLines ? '#e0e0e0' : 'transparent',
-            backgroundColor: 'transparent',
-            width: `${gridColumns * gridWidth + (showGridLines ? gridColumns - 1 : 0)}px`,
-            maxWidth: '100%'
-          }}>
+          <div
+            ref={gridRef}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${gridColumns}, minmax(${gridWidth}px, 1fr))`,
+              gridAutoRows: `${gridHeight}px`,
+              gap: showGridLines ? '1px' : '0px',
+              padding: showGridLines ? '1px' : '0px',
+              backgroundColor: 'transparent',
+              width: '100%',
+              maxWidth: '100%'
+            }}
+          >
             {allGridItems.map((item) => {
               // Highlight logic for all cells the dragged widget would occupy
               let highlight = false;
@@ -597,32 +553,27 @@ const AhaGrid: React.FC = () => {
                   style={{
                     width: '100%',
                     height: '100%',
-                    // backgroundColor: highlight ? '#e3f2fd' : (item.isPlaceholder ? 'transparent' : '#ffffff'),
-                    // border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
                     display: 'flex',
                     flexDirection: 'column',
                     boxSizing: 'border-box',
                     cursor: item.isPlaceholder ? 'default' : 'default',
                     userSelect: 'none',
-                    gridColumn: item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`,
+                    gridColumn: gridColumns === 1
+                      ? '1 / -1'
+                      : (item.gridCol !== undefined ? `${item.gridCol + 1} / span ${item.colSize}` : `span ${item.colSize}`),
                     gridRow: item.gridRow !== undefined ? `${item.gridRow + 1} / span ${item.rowSize}` : `span ${item.rowSize}`,
                     minHeight: item.isPlaceholder ? '20px' : 'auto',
                     transition: 'all 0.2s ease',
-
                     ...(item.isPlaceholder && isDragging && !highlight && {
                       border: '2px dashed #ddd',
-                      // backgroundColor: '#e3f2fd',
                     }),
                     ...(item.isPlaceholder && isDragging && highlight && {
                       border: '2px dashed #2196f3',
-                      // backgroundColor: '#e3f2fd',
                     }),
-
                     ...(!item.isPlaceholder && {
                       backgroundColor: '#ffffff',
                       border: highlight ? '2px solid #2196f3' : (showGridLines ? '1px solid #ccc' : 'none'),
                     }),
-
                   }}
                 >
                   {showHeaders && !item.isPlaceholder && (
@@ -637,12 +588,11 @@ const AhaGrid: React.FC = () => {
                       userSelect: 'none',
                       fontWeight: 'bold'
                     }}>
-                      {draggable && (
+                      {isCanonical && draggable ? (
                         <span
                           draggable={true}
                           onDragStart={(e) => {
                             handleInteractiveDragStart(e, item.id);
-                            // Set custom drag image to show the entire widget
                             const widgetElement = e.currentTarget.closest('[data-widget-id]') as HTMLElement;
                             if (widgetElement) {
                               e.dataTransfer.setDragImage(widgetElement, 20, 20);
@@ -658,7 +608,8 @@ const AhaGrid: React.FC = () => {
                             cursor: 'grab',
                             borderRadius: '50%',
                             transition: 'background-color 0.2s ease',
-                            userSelect: 'none'
+                            userSelect: 'none',
+                            opacity: isCanonical ? 1 : 0.3
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#e3f2fd';
@@ -674,6 +625,10 @@ const AhaGrid: React.FC = () => {
                           }}
                         >
                           ⋮⋮
+                        </span>
+                      ) : (
+                        <span
+                        >
                         </span>
                       )}
                       <span style={{ paddingLeft: "0.5rem" }}>{item.header}</span>
@@ -700,7 +655,7 @@ const AhaGrid: React.FC = () => {
 
         <div className="control-group">
           <label>
-            Grid Width (px):
+            Minimum Grid Width (px):
             <input
               type="range"
               min="100"
@@ -856,8 +811,6 @@ const AhaGrid: React.FC = () => {
           }}>
             {(() => {
               const storedData: any = {};
-
-              // Collect all stored data
               storedData.gridWidth = localStorage.getItem('ahagrid_gridWidth');
               storedData.gridHeight = localStorage.getItem('ahagrid_gridHeight');
               storedData.gridColumns = localStorage.getItem('ahagrid_gridColumns');
@@ -865,20 +818,17 @@ const AhaGrid: React.FC = () => {
               storedData.showGridLines = localStorage.getItem('ahagrid_showGridLines');
               storedData.showHeaders = localStorage.getItem('ahagrid_showHeaders');
               storedData.draggable = localStorage.getItem('ahagrid_draggable');
-
-              // Get widgets data (truncated for display)
+              // Parse widgets as JSON if possible
               const widgetsData = localStorage.getItem('ahagrid_widgets');
               if (widgetsData) {
                 try {
-                  const parsed = JSON.parse(widgetsData);
-                  storedData.widgets = `[${parsed.length} widgets] - ${JSON.stringify(parsed.slice(0, 2))}...`;
+                  storedData.widgets = JSON.parse(widgetsData);
                 } catch (error) {
                   storedData.widgets = 'Error parsing widgets data';
                 }
               } else {
-                storedData.widgets = 'No widgets data stored';
+                storedData.widgets = null;
               }
-
               return JSON.stringify(storedData, null, 2);
             })()}
           </div>
